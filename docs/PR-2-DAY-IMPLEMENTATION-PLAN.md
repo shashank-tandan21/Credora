@@ -706,7 +706,7 @@ The PR is ready for review only when all applicable checks below are true:
 | Repayment | Not implemented | Schedule, partial repayment, overdue, receipt tests |
 | Recovery | Not implemented | Eligibility, milestones, progress, ownership tests |
 | Disputes | Not implemented | Reviewer roles, resolution, audit tests |
-| Frontend | Not started | Build, typecheck, responsive/accessibility evidence |
+| Frontend | Phases 6–8 ready | React 19 + TS + Tailwind v4 + Recharts + Dual theme, typecheck & build passing |
 | Contracts | Not started | Hardhat compile/unit/integration evidence |
 | Local deployment | Not started | Reproducible deployment and event sync |
 | Sepolia | Not connected | Real receipt/hash evidence or documented deferral |
@@ -720,3 +720,4 @@ documents.
 |---|---|---|---|---|
 | 2026-10-28 | Team | Baseline | Plan expanded to include API, lender, contract, security, financial, operations, and QA requirements | Complete |
 | 2026-10-28 | A | Phase 1 | Added Alembic foundation, initial persistence schema, production database validation, demo readiness check, and repository implementations | Partial |
+| 2026-10-28 | Owner C | Phases 6–8 | Frontend foundation, dual-theme design system, typed API client, Borrower, Credit Studio, Loan Marketplace, Lending Pool, and Reviewer Desk built and verified passing production build | Complete |
