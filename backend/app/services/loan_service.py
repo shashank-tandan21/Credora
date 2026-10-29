@@ -11,7 +11,8 @@ from app.schemas.loan import (
     PoolStatisticsResponse,
     RepaymentInstallment,
 )
-from app.services.demo_store import DemoAssessment, DemoLoan, demo_store
+from app.repositories import demo_store
+from app.repositories.demo import DemoAssessment, DemoLoan
 
 
 ANNUAL_INTEREST_RATE = 0.12

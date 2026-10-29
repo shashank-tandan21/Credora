@@ -280,15 +280,15 @@ stable ordering.
 
 ### Deliverables
 
-- [ ] Alembic configuration, migration environment, and zero-to-current migration
-- [ ] Tables for `users`, `borrower_profiles`, `financial_evidence`,
+- [x] Alembic configuration, migration environment, and zero-to-current migration
+- [x] Tables for `users`, `borrower_profiles`, `financial_evidence`,
   `credit_assessments`, `loans`, `lender_positions`, `pool_transactions`,
   `repayments`, `recovery_requests`, `recovery_milestones`, `disputes`,
-  `audit_records`, and `idempotency_keys`
-- [ ] Foreign keys, unique constraints, indexes, check constraints, timestamps,
-  and transaction hashes
-- [ ] Repository interfaces and PostgreSQL implementations
-- [ ] Demo repository implementation selected by `DEMO_MODE`
+  `audit_records`, `idempotency_keys`, and `auth_sessions`
+- [x] Foreign keys, unique constraints, indexes, timestamps, and transaction hashes
+- [ ] Check constraints on persisted numeric values
+- [x] Repository interfaces and PostgreSQL implementations
+- [x] Demo repository implementation selected by `DEMO_MODE`
 - [ ] Startup validation for production configuration
 - [ ] Database health/readiness reporting
 - [ ] Migration rollback or forward-fix procedure documented
@@ -719,3 +719,4 @@ documents.
 | Date | Owner | Phase | Change/evidence | Status |
 |---|---|---|---|---|
 | 2026-10-28 | Team | Baseline | Plan expanded to include API, lender, contract, security, financial, operations, and QA requirements | Complete |
+| 2026-10-28 | A | Phase 1 | Added Alembic foundation, initial persistence schema, production database validation, demo readiness check, and repository implementations | Partial |

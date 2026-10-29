@@ -5,6 +5,9 @@ from app.config import get_settings
 
 
 settings = get_settings()
+if not settings.demo_mode:
+    settings.validate_production_configuration()
+
 app = FastAPI(
     title=settings.app_name,
     version="0.1.0",

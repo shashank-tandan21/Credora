@@ -14,12 +14,28 @@ uvicorn app.main:app --reload
 ```
 
 The API starts without PostgreSQL when `DEMO_MODE=true`. Database-backed features
-will be added behind the same service boundaries.
+use the SQLAlchemy models and Alembic migration below the same service
+boundaries.
+
+## Database migrations
+
+Production mode requires `DATABASE_URL` to be a PostgreSQL URL and validates
+that requirement at startup. With the backend environment configured, run:
+
+```powershell
+alembic upgrade head
+```
+
+The initial migration creates the complete application schema from an empty
+database. Re-running it is safe. For a local development rollback, use
+`alembic downgrade base`; production rollback should use a reviewed
+forward-fix migration after a backup.
 
 ## Initial endpoints
 
 - `GET /health`
 - `GET /api/v1/health`
+- `GET /api/v1/health/readiness`
 - `POST /api/v1/auth/nonce`
 - `POST /api/v1/auth/verify`
 - `POST /api/v1/borrowers/register`

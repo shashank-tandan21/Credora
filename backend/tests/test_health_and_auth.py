@@ -12,6 +12,13 @@ def test_health_endpoints() -> None:
     assert client.get("/api/v1/health").json()["status"] == "ok"
 
 
+def test_demo_readiness_does_not_require_database() -> None:
+    response = client.get("/api/v1/health/readiness")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ready", "mode": "demo"}
+
+
 def test_demo_wallet_authentication() -> None:
     nonce_response = client.post("/api/v1/auth/nonce", json={"wallet_address": WALLET})
     assert nonce_response.status_code == 200

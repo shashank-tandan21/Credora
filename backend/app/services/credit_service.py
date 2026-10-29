@@ -11,7 +11,8 @@ from app.schemas.credit import (
     EvidenceSubmissionRequest,
     ScoreComponent,
 )
-from app.services.demo_store import DemoAssessment, DemoEvidence, demo_store
+from app.repositories import demo_store
+from app.repositories.demo import DemoAssessment, DemoEvidence
 from app.services.scoring_service import ScoreInputs, calculate_score
 
 

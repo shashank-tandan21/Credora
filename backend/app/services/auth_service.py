@@ -10,7 +10,7 @@ from app.schemas.auth import (
     VerifySignatureRequest,
     VerifySignatureResponse,
 )
-from app.services.demo_store import demo_store
+from app.repositories import demo_store
 
 
 class AuthService:

@@ -5,7 +5,8 @@ from fastapi import HTTPException, status
 
 from app.schemas.auth import AuthenticatedUser
 from app.schemas.borrower import BorrowerProfileResponse, BorrowerRegistrationRequest
-from app.services.demo_store import DemoBorrowerProfile, demo_store
+from app.repositories import demo_store
+from app.repositories.demo import DemoBorrowerProfile
 
 
 class BorrowerService:
