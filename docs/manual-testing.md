@@ -243,16 +243,84 @@ Invoke-RestMethod `
 The demo pool starts with `25000 MockUSDC` of available liquidity and reserves
 the requested principal when a demo loan request is created.
 
+## 13. Local blockchain workflow
+
+This section exercises the contracts, the backend receipt verification, and the
+frontend wallet flows on a local Hardhat chain. No real funds or keys are used;
+Hardhat's development accounts and their keys are public test values.
+
+### 13.1 Start the chain and deploy
+
+```powershell
+cd contracts
+npm ci
+npm test                 # expected: 97 passing
+npm run node             # keep this terminal open
+
+# second terminal
+cd contracts
+npm run deploy:local
+npm run smoke:local      # expected: 20 confirmed transactions, reconciliation line
+```
+
+Expected addresses on a fresh node: `MockUSDC` at
+`0x5FbDB2315678afecb367f032d93F642f64180aa3` and `IdentityRegistry` at
+`0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512` (full list in
+`contracts/deployments/localhost.env.example`).
+
+### 13.2 Run the backend against the chain
+
+Set `SEPOLIA_RPC_URL=http://127.0.0.1:8545`, `CHAIN_ID=31337`, and the seven
+`*_ADDRESS` values from `localhost.env.example` in `backend/.env`, then start
+uvicorn. `GET /api/v1/chain/config` should report `"network": "hardhat-local"`
+and `"contracts_configured": true` and must not contain the RPC URL.
+
+### 13.3 Verify an identity registration receipt
+
+1. Authenticate as a Hardhat account and register a borrower (sections 3-5).
+2. Call `POST /api/v1/borrowers/me/identity/sync` with
+   `{"transaction_hash": "0x<64 hex>"}` for a hash that does not exist.
+   Expected: HTTP `409`, identity still `pending`.
+3. From that wallet, call `IdentityRegistry.register(keccak256(profile id))`
+   (the frontend does this in step 13.4).
+4. Sync again with the real hash. Expected: HTTP `200`, `identity_status:
+   registered`, and `registration_transaction_hash` equal to the hash.
+5. Repeat the same request: `200`. Use a different hash: `409`.
+
+### 13.4 Frontend wallet flows
+
+Start the frontend with `VITE_CHAIN_ID=31337` and `VITE_DEMO_MODE=false`, add
+network `http://127.0.0.1:8545` (chain 31337) to MetaMask, and import Hardhat
+accounts #0 (operator) and another account (borrower/lender).
+
+| Step | Expected |
+|---|---|
+| Wallet on another network | Header shows "Switch to Hardhat Local"; actions are disabled with a notice |
+| Borrower → Attest Identity On-chain | Transaction panel walks Prepared → Submitted → Pending → Confirmed; banner says the backend verified the receipt; card shows the backend-verified hash |
+| Switch to account #0 → Reviewer Desk → Attest score (71) for the borrower | Confirmed; role chips show all operator roles |
+| Borrower → Request Loan | Exact on-chain quote; after confirmation "funded and disbursed" with the loan id |
+| My Facilities → Get test mUSDC, then Repay in full | Two transactions (approve, repay) confirmed; loan shows as closed |
+| Lending Pool → Deposit 250 | Approve (if needed) and deposit confirmed; position shows shares and value |
+| Get test mUSDC twice | Second attempt fails with "once every 24 hours"; nothing is shown as success |
+| Reject a request in the wallet | Panel shows "Rejected in wallet"; no hash, no success |
+| Switch to Demo Mode | Lending position badge reads "Demo position"; messages say simulated |
+
+The same flows run unattended with `npm run test:browser:local` in `frontend/`.
+
 ## Current limitations
 
 - Demo users and borrower profiles are in-memory only.
 - Evidence and credit assessments are also in-memory only.
 - Loans and pool statistics are also in-memory demo data.
-- Deposit, withdrawal, disbursement, and repayment transactions are not yet
-  connected to LendingPool or LoanManager contracts.
+- In on-chain mode, deposits, withdrawals, loans, repayments, disputes, and
+  recovery run against the contracts, but the backend only ingests identity
+  registration receipts; other events are not yet synchronized to the API.
+- Score attestations are published by an operator wallet, not automatically
+  from backend assessments.
 - Score inputs are manually supplied normalized demo values.
 - The model is illustrative and not validated for real lending decisions.
 - Ethereum wallet signature verification is not enabled.
 - PostgreSQL migrations are not yet added.
-- `registration_transaction_hash` remains null until IdentityRegistry
-  integration is implemented.
+- `registration_transaction_hash` is set only after a verified
+  `IdentityRegistry` receipt, which requires a configured chain.
+- Sepolia is not deployed yet (see the implementation plan, Phase 11).

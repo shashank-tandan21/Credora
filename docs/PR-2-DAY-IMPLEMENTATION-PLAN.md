@@ -21,9 +21,9 @@ its model, route, or UI shell exists.
 
 ## 2. Current repository state
 
-The repository currently contains the FastAPI backend and documentation. The
-frontend, Solidity project, migrations, production repositories, and Sepolia
-integration are pending.
+The repository contains the FastAPI backend, the React frontend, the Hardhat
+contracts project, and documentation. Production repositories wired into the
+services and the Sepolia deployment are pending.
 
 Completed backend/demo capabilities:
 
@@ -41,9 +41,24 @@ Important current limitation: SQLAlchemy models and an async database session
 factory exist, but the API services still use the in-memory demo store. This is
 not PostgreSQL persistence until Phase 1 is complete.
 
+Completed blockchain/Web3 capabilities (Owner B, PR 3):
+
+- Hardhat 3 project in `contracts/` with all seven contracts, 97 tests
+  (97.6% line coverage), deterministic local deployment, ABI/event/error
+  artifacts, a 20-transaction smoke test, and a test-gated Sepolia deploy
+- Frontend wallet connection (wagmi/viem) with the `prepared`, `submitted`,
+  `pending`, `confirmed`, and `failed` transaction lifecycle and on-chain
+  borrower, lender, and reviewer flows
+- Backend read-only chain verification: `GET /chain/config` and
+  receipt-verified `POST /borrowers/me/identity/sync`
+
+Sepolia has not been deployed yet; see Phase 11 for the deferral.
+
 References:
 
 - [Backend README](../backend/README.md)
+- [Contracts README](../contracts/README.md)
+- [Frontend README](../frontend/README.md)
 - [Manual testing guide](./manual-testing.md)
 
 ## 3. Product scope
@@ -197,6 +212,7 @@ URI, chain ID, nonce, issued-at, expiration, and replay protection.
 |---|---|---|
 | POST | `/borrowers/register` | Create the authenticated borrower profile |
 | GET | `/borrowers/me` | Read the authenticated profile |
+| POST | `/borrowers/me/identity/sync` | Mark the profile registered after verifying the caller's `IdentityRegistered` receipt (implemented) |
 | POST | `/credit/evidence` | Submit normalized financial evidence |
 | GET | `/credit/evidence` | List the caller's evidence |
 | POST | `/credit/assess` | Create a new assessment |
@@ -255,6 +271,19 @@ must not reserve the same liquidity twice.
 
 Reviewer/admin routes must enforce server-side roles and return explicit
 `401`/`403` errors. Resolution notes and audit records are required.
+
+### Chain
+
+| Method | Route | Auth | Purpose |
+|---|---|---|---|
+| GET | `/chain/config` | Public | Configured chain id, network, confirmations, and contract addresses; never the RPC URL (implemented) |
+
+Receipt verification rules (used by every sync endpoint): the receipt must
+exist on `CHAIN_ID`, have status 1, contain the expected event emitted by the
+expected contract with the caller's wallet as the indexed address, and have
+`CHAIN_CONFIRMATIONS` confirmations. Pending or under-confirmed receipts return
+`409`, failed or mismatched receipts `422`, and RPC or configuration problems
+`503`. Event topics come from the generated `backend/app/services/chain_events.py`.
 
 ### Error and pagination standard
 
@@ -403,6 +432,37 @@ appropriate.
 - ABI, address, event, error, and deployment artifacts are versioned separately
   for local and Sepolia networks.
 
+### Status — complete (PR 3, Owner B)
+
+- [x] Hardhat 3.21.2, Solidity 0.8.28, OpenZeppelin 5.6.1, all versions pinned
+- [x] All seven contracts with interfaces defining functions, structs, enums,
+  events, and custom errors; non-upgradeable by decision
+- [x] Roles, role administration, pause matrix, and emergency token recovery
+  documented in the [contracts README](../contracts/README.md)
+- [x] `uint256` 6-decimal units, basis-point scores and rates, documented
+  rounding (interest rounded down; final installment absorbs the remainder)
+- [x] Cancellation, expiry, partial repayment, late payment, failed funding,
+  default, and duplicate actions defined and tested
+- [x] Compiles with no warnings; largest contract (LoanManager) is 12.8 KB
+- [x] 97 tests: transitions, rejections, access control, arithmetic, pause,
+  reentrancy through a malicious token, invalid inputs, deterministic
+  deployment, and event-sourced pool reconciliation; 97.6% line coverage
+  (package threshold 95%)
+- [x] Events and errors documented; topics and selectors exported to
+  `contracts/deployments/abi/interface.json`
+- [x] Local deployment is deterministic (same addresses and deployment hashes
+  on every fresh node)
+- [x] `npm run deploy:sepolia` runs the full test suite before any testnet
+  transaction, and the deploy script refuses Sepolia otherwise
+- [x] Separate `deployments/localhost.*` and `deployments/sepolia.*` artifacts
+
+Design decisions worth reviewing: lender positions are ERC-4626 shares whose
+price rises with repaid interest and falls with recorded losses; `totalAssets()`
+uses internal accounting so token donations cannot move the share price;
+`autoFund` disburses at request time when idle liquidity suffices, otherwise the
+request waits for a funder; and repayments stay allowed while contracts are
+paused.
+
 ## 13. Frontend foundation and pages — Phases 6–8 — Owner C
 
 ### Foundation
@@ -445,14 +505,27 @@ state. No decorative buttons are permitted.
 
 ### Deliverables
 
-- [ ] Wagmi/Viem Sepolia configuration
-- [ ] Connect/disconnect and account display
-- [ ] Chain mismatch prompt and switch-chain flow
-- [ ] Contract ABI/address configuration
-- [ ] Transaction preparation and wallet submission
-- [ ] Receipt waiting and lifecycle notifications
-- [ ] Rejected, reverted, timed-out, and replaced transaction handling
-- [ ] Confirmation depth and chain-reorganization policy
+- [x] Wagmi/Viem Sepolia configuration (plus local Hardhat chain 31337)
+- [x] Connect/disconnect and account display
+- [x] Chain mismatch prompt and switch-chain flow
+- [x] Contract ABI/address configuration (generated ABIs; env addresses; local
+  fallback only on chain 31337)
+- [x] Transaction preparation and wallet submission (simulation before prompt)
+- [x] Receipt waiting and lifecycle notifications
+- [x] Rejected, reverted, timed-out, and replaced transaction handling
+- [x] Confirmation depth and chain-reorganization policy (2 confirmations on
+  Sepolia, 1 locally; configurable with `VITE_CONFIRMATIONS`)
+
+Evidence: 27 unit tests of the lifecycle engine and error classification; a
+local-chain E2E suite running the real engine against deployed contracts; and
+an 11-step browser smoke test (`npm run test:browser:local`) covering connect,
+identity registration with backend verification, attestation, borrowing,
+repayment, deposit, a revert shown as failed, Demo Mode labelling, phone-width
+layout, and the wrong-network block. Screenshots: [`docs/evidence/pr-3`](./evidence/pr-3).
+
+Open item for Owner A: wallet login still uses the demo `demo:<nonce>`
+signature in every mode. The frontend binds the backend session to the
+connected wallet, but real EIP-4361 verification remains a backend task.
 
 ### Acceptance criteria
 
@@ -474,6 +547,27 @@ state. No decorative buttons are permitted.
 Local completion requires a reproducible command sequence and a generated
 address/ABI artifact that is not confused with Sepolia configuration.
 
+### Status — complete (PR 3, Owner B)
+
+- [x] `npm run node` + `npm run deploy:local` deploy, wire roles, seed 25,000
+  mUSDC liquidity, and write `deployments/localhost.json` and
+  `localhost.env.example`
+- [x] `npm run smoke:local` runs 20 real transactions against the deployed
+  addresses, including overdue, restructuring, and milestone completion
+- [x] Backend reads: identity receipts are verified against the local chain and
+  update application state; confirmed live (unknown hash `409`, real receipt
+  `200` registered with its hash, replay `200`, different hash `409`)
+- [x] Frontend wallet actions run against local contracts (engine E2E and
+  browser smoke test)
+- [x] Restart/reconnect: a fresh node redeploys to identical addresses; the
+  frontend reconnects and re-reads chain state
+- [x] Demo Mode remains usable without contracts, wallet, or RPC
+
+Not yet synchronized: loans, repayments, deposits, disputes, and recovery are
+read from the chain by the frontend, but the backend does not yet ingest those
+events. The topics and reconciliation identity are documented in the contracts
+README for Owner A's Phase 2-4 sync endpoints.
+
 ## 16. Sepolia deployment — Phase 11 — Owner B
 
 Begin only after local contract and integration tests pass.
@@ -493,6 +587,30 @@ Begin only after local contract and integration tests pass.
 Private keys must never be placed in frontend code, CI logs, committed files,
 or chat messages. Missing Sepolia variables must leave Demo Mode functional.
 
+### Status — ready, not yet deployed (deferred)
+
+Everything needed is in place, but no deployment was made in PR 3 because no
+funded Sepolia deployer key or RPC endpoint was available to the developer
+environment, and keys must not be shared through code or chat. G6 therefore
+stays open and Sepolia features remain labelled `not configured` in the UI.
+
+To complete it (Owner B):
+
+```powershell
+cd contracts
+npx hardhat keystore set SEPOLIA_RPC_URL
+npx hardhat keystore set SEPOLIA_DEPLOYER_PRIVATE_KEY   # dedicated, minimally funded
+npx hardhat keystore set ETHERSCAN_API_KEY
+npm run deploy:sepolia      # runs all tests first; writes deployments/sepolia.json
+npm run verify:sepolia
+npm run smoke:sepolia       # writes tx hashes, receipt status, chain id, timestamps
+```
+
+Then set the `VITE_*_ADDRESS` and backend `*_ADDRESS` values from
+`deployments/sepolia.env.example`, and record the smoke evidence and explorer
+links in the work log. The overdue and recovery steps need time travel, so on
+Sepolia they are covered by the local tests instead.
+
 ## 17. Testing and quality requirements — Phase 12 — Owner C with A/B
 
 ### Required checks
@@ -504,7 +622,19 @@ python -m compileall -q app tests
 ```
 
 Also run the frontend package's typecheck/build commands and the contracts'
-compile/test commands once those projects exist.
+compile/test commands once those projects exist:
+
+```powershell
+cd contracts
+npm ci; npm run typecheck; npm run coverage
+
+cd ..\frontend
+npm ci; npm run typecheck; npm run lint; npm test; npm run build
+```
+
+The GitHub Actions workflow `.github/workflows/ci.yml` runs the backend,
+contracts, and frontend checks on every pull request, including a check that
+the generated ABI, frontend, and backend artifacts match the contracts.
 
 The repository must provide one documented command or CI job for each of the
 following:
@@ -600,8 +730,24 @@ DEMO_MODE=true
 DATABASE_URL=
 SEPOLIA_RPC_URL=
 CHAIN_ID=11155111
+CHAIN_CONFIRMATIONS=1
+CHAIN_RPC_TIMEOUT_SECONDS=10
 JWT_SECRET=
 AUTH_NONCE_EXPIRY_SECONDS=600
+```
+
+For a local chain set `SEPOLIA_RPC_URL=http://127.0.0.1:8545` and
+`CHAIN_ID=31337`. With `DEMO_MODE=false` the backend refuses to start without
+the RPC URL, a supported chain id, and all seven contract addresses.
+
+### Contracts deployment (Hardhat configuration variables)
+
+```text
+SEPOLIA_RPC_URL=                # keystore or environment; never committed
+SEPOLIA_DEPLOYER_PRIVATE_KEY=   # keystore preferred; dedicated testnet key only
+ETHERSCAN_API_KEY=              # source verification
+OPERATOR_ADDRESS=               # optional; receives operational roles instead of the deployer
+SMOKE_BORROWER_FUNDING_ETH=     # optional; Sepolia ETH sent to the ephemeral smoke borrower
 ```
 
 ### Contract addresses
@@ -622,6 +768,9 @@ DISPUTE_MANAGER_ADDRESS=
 VITE_API_URL=
 VITE_CHAIN_ID=11155111
 VITE_DEMO_MODE=true
+VITE_RPC_URL=
+VITE_CONFIRMATIONS=
+VITE_TX_TIMEOUT_MS=
 VITE_MOCK_USDC_ADDRESS=
 VITE_IDENTITY_REGISTRY_ADDRESS=
 VITE_CREDIT_SCORE_REGISTRY_ADDRESS=
@@ -682,10 +831,10 @@ The PR is ready for review only when all applicable checks below are true:
 - [ ] API schemas, status codes, errors, pagination, and ownership rules are documented.
 - [ ] Lender deposit, withdrawal, position, and pool flows work.
 - [ ] Repayment, overdue, recovery, and dispute flows work.
-- [ ] Contract compilation, unit tests, integration tests, and event checks pass.
+- [x] Contract compilation, unit tests, integration tests, and event checks pass.
 - [ ] Frontend pages contain no non-functional interactive controls.
 - [ ] Frontend typecheck, build, responsive checks, and accessibility checks pass.
-- [ ] Wallet transactions expose accurate lifecycle states.
+- [x] Wallet transactions expose accurate lifecycle states.
 - [ ] Sepolia flows, if enabled, use real receipts and transaction hashes.
 - [ ] No secrets or private keys are committed or exposed.
 - [ ] Security, logging, error, and retry behavior is documented.
@@ -698,8 +847,8 @@ The PR is ready for review only when all applicable checks below are true:
 | Capability | Current state | Target evidence |
 |---|---|---|
 | Health checks | Demo/backend ready | Automated health test |
-| Wallet authentication | Demo nonce/signature | Real signature tests outside demo |
-| Borrower registration | In-memory, pending identity | Persistent record and IdentityRegistry receipt |
+| Wallet authentication | Demo nonce/signature; frontend binds the session to the connected wallet | Real signature tests outside demo |
+| Borrower registration | IdentityRegistry receipt verified by the backend; profile still in-memory | Persistent record and IdentityRegistry receipt |
 | Evidence and scoring | In-memory academic model | PostgreSQL repository tests and disclosure |
 | Lender pool | Demo statistics only | Deposit/withdrawal/position/reconciliation tests |
 | Loans | Demo requested state | Contract-aware lifecycle and receipt sync |
@@ -707,9 +856,10 @@ The PR is ready for review only when all applicable checks below are true:
 | Recovery | Not implemented | Eligibility, milestones, progress, ownership tests |
 | Disputes | Not implemented | Reviewer roles, resolution, audit tests |
 | Frontend | Phases 6–8 ready | React 19 + TS + Tailwind v4 + Recharts + Dual theme, typecheck & build passing |
-| Contracts | Not started | Hardhat compile/unit/integration evidence |
-| Local deployment | Not started | Reproducible deployment and event sync |
-| Sepolia | Not connected | Real receipt/hash evidence or documented deferral |
+| Wallet integration | Wagmi/viem lifecycle, on-chain flows in all portals | Unit, local E2E, and browser smoke tests |
+| Contracts | Complete: 7 contracts, 97 tests, 97.6% line coverage | Hardhat compile/unit/integration evidence |
+| Local deployment | Complete: deterministic deploy, 20-tx smoke, identity event sync | Reproducible deployment and event sync |
+| Sepolia | Ready, deployment deferred (no funded key in this environment) | Real receipt/hash evidence or documented deferral |
 
 ## 23. Work log
 
@@ -721,3 +871,8 @@ documents.
 | 2026-10-28 | Team | Baseline | Plan expanded to include API, lender, contract, security, financial, operations, and QA requirements | Complete |
 | 2026-10-28 | A | Phase 1 | Added Alembic foundation, initial persistence schema, production database validation, demo readiness check, and repository implementations | Partial |
 | 2026-10-28 | Owner C | Phases 6–8 | Frontend foundation, dual-theme design system, typed API client, Borrower, Credit Studio, Loan Marketplace, Lending Pool, and Reviewer Desk built and verified passing production build | Complete |
+| 2026-11-02 | B | Phase 5 | Seven contracts on Hardhat 3 / OZ 5.6.1; 97 tests, 97.6% line coverage, reentrancy and event-reconciliation tests | Complete |
+| 2026-11-02 | B | Phase 10 | Deterministic local deployment, artifact export, 20-transaction smoke test; backend verifies IdentityRegistry receipts (`/chain/config`, `/borrowers/me/identity/sync`, 16 tests) | Complete |
+| 2026-11-02 | B/C | Phase 9 | Wagmi/viem wallet layer and transaction lifecycle wired into all portals; 27 unit tests, local-chain E2E, 11-step browser smoke test; demo actions no longer fabricate hashes | Complete |
+| 2026-11-02 | B | Phase 11 | Test-gated Sepolia deploy, verify, and smoke scripts with keystore secrets; deployment deferred until a funded testnet key is available | Deferred |
+| 2026-11-02 | B | Dependencies | Added pinned `hardhat 3.21.2`, `@openzeppelin/contracts 5.6.1`, `wagmi 3.7.9`, `viem 2.57.14`, `@tanstack/react-query 5.105.1`, `vitest 5.0.5`, `playwright-core 1.56.1` | Recorded |
