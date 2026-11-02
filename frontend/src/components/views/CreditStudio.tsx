@@ -13,6 +13,7 @@ import {
   Sparkles,
   RefreshCw,
   Scale,
+  ArrowRight,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../common/Card'
 import { Button } from '../common/Button'
@@ -33,11 +34,13 @@ const ZERO_ID = `0x${'0'.repeat(64)}`
 interface CreditStudioProps {
   currentAssessment: CreditAssessment | null
   onAssessmentUpdated: (newAssessment: CreditAssessment) => void
+  onProceedToBorrow?: () => void
 }
 
 export const CreditStudio: React.FC<CreditStudioProps> = ({
   currentAssessment,
   onAssessmentUpdated,
+  onProceedToBorrow,
 }) => {
   // Slider states for evidence
   const [repaymentHistory, setRepaymentHistory] = useState(
@@ -160,7 +163,7 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
             Deterministic 5-factor scoring model with transparent weights and explainability audit
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {(onchain ? onChainAssessmentId : currentAssessment) && (
             <Button
               size="sm"
@@ -180,6 +183,16 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
           >
             Commit Assessment
           </Button>
+          {onProceedToBorrow && (
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={onProceedToBorrow}
+              rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+            >
+              Proceed to Borrow
+            </Button>
+          )}
         </div>
       </div>
 
@@ -395,6 +408,17 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
                   </div>
                 </div>
               </div>
+
+              {onProceedToBorrow && (
+                <Button
+                  size="sm"
+                  className="w-full mt-3"
+                  onClick={onProceedToBorrow}
+                  rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                >
+                  Apply for Loan ({formatUSD(projectedLimit)} limit)
+                </Button>
+              )}
             </CardContent>
           </Card>
 

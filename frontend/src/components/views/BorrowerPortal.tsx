@@ -166,7 +166,7 @@ export const BorrowerPortal: React.FC<BorrowerPortalProps> = ({
           <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-xs">
             <button
               onClick={() => setSubTab('overview')}
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
                 subTab === 'overview'
                   ? 'bg-white text-blue-600 dark:bg-slate-900 dark:text-blue-400 shadow-xs font-semibold'
                   : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
@@ -177,7 +177,7 @@ export const BorrowerPortal: React.FC<BorrowerPortalProps> = ({
             </button>
             <button
               onClick={() => setSubTab('credit')}
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
                 subTab === 'credit'
                   ? 'bg-white text-blue-600 dark:bg-slate-900 dark:text-blue-400 shadow-xs font-semibold'
                   : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
@@ -188,7 +188,7 @@ export const BorrowerPortal: React.FC<BorrowerPortalProps> = ({
             </button>
             <button
               onClick={() => setSubTab('borrow')}
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3.5 py-1.5 rounded-lg font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
                 subTab === 'borrow'
                   ? 'bg-white text-blue-600 dark:bg-slate-900 dark:text-blue-400 shadow-xs font-semibold'
                   : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200'
@@ -541,6 +541,7 @@ export const BorrowerPortal: React.FC<BorrowerPortalProps> = ({
             onAssessmentUpdated(newAssessment)
             setSubTab('borrow')
           }}
+          onProceedToBorrow={() => setSubTab('borrow')}
         />
       )}
 

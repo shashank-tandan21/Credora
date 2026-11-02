@@ -46,17 +46,17 @@ const MainApp: React.FC = () => {
     }
   }
 
-  // Sync tab if user changes persona from header
+  // Sync tab if user changes persona from elsewhere
   useEffect(() => {
     if (role === 'lender' && activeTab === 'borrower') {
       setActiveTab('lender')
     } else if (role === 'reviewer' && activeTab === 'borrower') {
       setActiveTab('reviewer')
     }
-  }, [role])
+  }, [role, activeTab])
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50/60 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 transition-colors">
+    <div className="min-h-screen flex flex-col bg-slate-50/70 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 transition-colors">
       <Header activeTab={activeTab} onSelectTab={handleNavigate} />
 
       {/* Remount views on mode change so demo and on-chain state never mix. */}
@@ -90,26 +90,27 @@ const MainApp: React.FC = () => {
       <TransactionToast />
 
       {/* Institutional Quality Footer */}
-      <footer className="border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900/60 py-6 text-xs text-slate-500 dark:text-slate-400">
+      <footer className="border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#0b0f19] py-6 text-xs text-slate-500 dark:text-slate-400 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <div className="w-5 h-5 rounded-md bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold">
               C
             </div>
-            <span className="font-semibold text-slate-700 dark:text-slate-300">
+            <span className="font-semibold text-slate-800 dark:text-slate-200">
               Credora Protocol
             </span>
-            <span className="text-slate-400 dark:text-slate-600">•</span>
-            <span>Academic Micro-Lending Prototype</span>
+            <span className="text-slate-300 dark:text-slate-700">•</span>
+            <span className="text-slate-500 dark:text-slate-400">
+              Academic Micro-Lending Prototype
+            </span>
           </div>
 
-          <div className="flex items-center gap-6">
-            <span className="text-[11px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-400 font-mono">
-              academic_model=true
-            </span>
-            <span className="text-[11px] text-slate-400">
-              Frontend & Quality: <span className="font-semibold text-slate-600 dark:text-slate-300">Owner C</span>
-            </span>
+          <div className="flex items-center gap-4 text-[11px] text-slate-400 dark:text-slate-500">
+            <span>Non-custodial Liquidity</span>
+            <span>•</span>
+            <span>5-Factor Explainable Scoring</span>
+            <span>•</span>
+            <span className="font-mono text-slate-500 dark:text-slate-400">v1.0-research</span>
           </div>
         </div>
       </footer>
