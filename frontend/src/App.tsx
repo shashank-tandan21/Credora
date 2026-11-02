@@ -6,11 +6,13 @@ import { LendingPool } from './components/views/LendingPool'
 import { ReviewerDesk } from './components/views/ReviewerDesk'
 import { LandingPage } from './components/views/LandingPage'
 import { BorrowerPortal } from './components/views/BorrowerPortal'
+import { TransactionToast } from './components/web3/TransactionToast'
+import { Web3Provider } from './web3/Web3Provider'
 import { api } from './api/client'
 import type { CreditAssessment, LoanRequest } from './types'
 
 const MainApp: React.FC = () => {
-  const { role } = useAuth()
+  const { role, networkMode } = useAuth()
   const [activeTab, setActiveTab] = useState<string>('overview')
   const [borrowerSubTab, setBorrowerSubTab] = useState<'overview' | 'credit' | 'borrow'>('overview')
   const [currentAssessment, setCurrentAssessment] = useState<CreditAssessment | null>(null)
@@ -57,7 +59,8 @@ const MainApp: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-slate-50/60 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 transition-colors">
       <Header activeTab={activeTab} onSelectTab={handleNavigate} />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Remount views on mode change so demo and on-chain state never mix. */}
+      <main key={networkMode} className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'overview' && (
           <LandingPage onNavigate={handleNavigate} />
         )}
@@ -83,6 +86,8 @@ const MainApp: React.FC = () => {
 
         {activeTab === 'reviewer' && <ReviewerDesk />}
       </main>
+
+      <TransactionToast />
 
       {/* Institutional Quality Footer */}
       <footer className="border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900/60 py-6 text-xs text-slate-500 dark:text-slate-400">
@@ -115,9 +120,11 @@ const MainApp: React.FC = () => {
 export default function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <MainApp />
-      </AuthProvider>
+      <Web3Provider>
+        <AuthProvider>
+          <MainApp />
+        </AuthProvider>
+      </Web3Provider>
     </ThemeProvider>
   )
 }

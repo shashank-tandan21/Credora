@@ -130,11 +130,41 @@ export interface DisputeRecord {
   created_at: string
 }
 
+/** Wallet transaction lifecycle. `submitted` and `pending` are never success. */
+export type TransactionPhase = 'prepared' | 'submitted' | 'pending' | 'confirmed' | 'failed'
+
+export type TransactionFailureKind =
+  | 'rejected'
+  | 'reverted'
+  | 'timeout'
+  | 'replaced'
+  | 'wrong_chain'
+  | 'not_configured'
+  | 'error'
+
 export interface TransactionStatus {
   hash?: string
-  state: 'idle' | 'preparing' | 'submitted' | 'pending' | 'confirmed' | 'failed'
+  hashes?: string[]
+  state: 'idle' | TransactionPhase
   title: string
   description?: string
   error?: string
+  failureKind?: TransactionFailureKind
+  /** Lifecycle index where a failure happened: 0 prepare, 1 wallet submit, 2 pending receipt. */
+  failedStep?: number
+  stepIndex?: number
+  stepCount?: number
+}
+
+export type NetworkMode = 'demo' | 'onchain'
+
+export interface ChainConfig {
+  demo_mode: boolean
+  chain_id: number
+  network: 'sepolia' | 'hardhat-local' | 'unsupported'
+  rpc_configured: boolean
+  contracts_configured: boolean
+  confirmations: number
+  contracts: Record<string, string | null>
 }
 

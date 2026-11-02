@@ -3,22 +3,21 @@ import {
   ShieldCheck,
   Sun,
   Moon,
-  Wallet,
-  CheckCircle2,
   Landmark,
   UserCheck,
   Sparkles,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
-import { truncateAddress } from '../../utils/cn'
+import { networkLabel } from '../../web3/config'
+import { WalletControl } from '../web3/WalletControl'
 import type { UserRole } from '../../types'
 
 export const Header: React.FC<{ activeTab: string; onSelectTab: (tab: string) => void }> = ({
   activeTab,
   onSelectTab,
 }) => {
-  const { walletAddress, role, setRole, networkMode, setNetworkMode, isConnected } = useAuth()
+  const { role, setRole, networkMode, setNetworkMode } = useAuth()
   const { resolvedTheme, toggleTheme } = useTheme()
 
   const navItems = [
@@ -114,8 +113,9 @@ export const Header: React.FC<{ activeTab: string; onSelectTab: (tab: string) =>
 
             {/* Network / Demo Badge */}
             <button
-              onClick={() => setNetworkMode(networkMode === 'demo' ? 'sepolia' : 'demo')}
-              title="Click to toggle Demo Mode vs Sepolia Testnet"
+              onClick={() => setNetworkMode(networkMode === 'demo' ? 'onchain' : 'demo')}
+              title={`Switch between simulated Demo Mode and real ${networkLabel} transactions`}
+              aria-label={`Network mode: ${networkMode === 'demo' ? 'Demo Mode' : networkLabel}. Click to switch.`}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border cursor-pointer transition-colors ${
                 networkMode === 'demo'
                   ? 'bg-amber-50 text-amber-800 border-amber-200/80 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60'
@@ -128,7 +128,7 @@ export const Header: React.FC<{ activeTab: string; onSelectTab: (tab: string) =>
                 }`}
               />
               <span className="font-semibold">
-                {networkMode === 'demo' ? 'Demo Mode' : 'Sepolia'}
+                {networkMode === 'demo' ? 'Demo Mode' : networkLabel}
               </span>
             </button>
 
@@ -145,18 +145,7 @@ export const Header: React.FC<{ activeTab: string; onSelectTab: (tab: string) =>
               )}
             </button>
 
-            {/* Wallet Pill */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs font-mono">
-              <Wallet className="w-3.5 h-3.5 text-blue-500" />
-              <span className="text-slate-700 dark:text-slate-300">
-                {truncateAddress(walletAddress)}
-              </span>
-              {isConnected && (
-                <span title="Connected">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                </span>
-              )}
-            </div>
+            <WalletControl />
           </div>
         </div>
 

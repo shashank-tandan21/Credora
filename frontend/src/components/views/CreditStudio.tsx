@@ -19,8 +19,16 @@ import { Button } from '../common/Button'
 import { Badge, RiskBadge } from '../common/Badge'
 import { Modal } from '../common/Modal'
 import { api } from '../../api/client'
+import { useAuth } from '../../contexts/AuthContext'
 import { formatUSD } from '../../utils/cn'
+import { steps } from '../../web3/actions'
+import { networkLabel } from '../../web3/config'
+import { useBorrowerChainState, useOnChainStatus } from '../../web3/hooks'
+import { hashText } from '../../web3/units'
+import { useContractTransaction } from '../../web3/useContractTransaction'
 import type { CreditAssessment } from '../../types'
+
+const ZERO_ID = `0x${'0'.repeat(64)}`
 
 interface CreditStudioProps {
   currentAssessment: CreditAssessment | null
@@ -52,6 +60,14 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
   const [isDisputeOpen, setIsDisputeOpen] = useState(false)
   const [disputeReason, setDisputeReason] = useState('')
   const [disputeStatus, setDisputeStatus] = useState<string | null>(null)
+
+  const { networkMode } = useAuth()
+  const onchain = networkMode === 'onchain'
+  const chainStatus = useOnChainStatus()
+  const chainBorrower = useBorrowerChainState()
+  const { run, isRunning } = useContractTransaction()
+  const onChainAssessmentId =
+    chainBorrower.assessmentId && chainBorrower.assessmentId !== ZERO_ID ? chainBorrower.assessmentId : undefined
 
   // Real-time calculated score projection
   const projectedScore = Number(
@@ -101,10 +117,22 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
 
   const handleDisputeSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!currentAssessment || !disputeReason.trim()) return
+    if (!disputeReason.trim()) return
+    if (onchain) {
+      if (!onChainAssessmentId) return
+      // Only the hash of the reason is written on-chain; the text stays off-chain.
+      const result = await run('Open on-chain score dispute', steps.openDispute(onChainAssessmentId, hashText(disputeReason.trim())))
+      if (!result) return
+      setIsDisputeOpen(false)
+      setDisputeReason('')
+      setDisputeStatus(`Dispute recorded on ${networkLabel}. A reviewer resolves it from the Reviewer Desk.`)
+      setTimeout(() => setDisputeStatus(null), 8000)
+      return
+    }
+    if (!currentAssessment) return
     await api.disputeAssessment(currentAssessment.id, disputeReason)
     setIsDisputeOpen(false)
-    setDisputeStatus('Dispute submitted to Reviewer Desk for manual adjudication.')
+    setDisputeStatus('Demo dispute submitted to the Reviewer Desk queue (simulated, no blockchain transaction).')
     setTimeout(() => setDisputeStatus(null), 6000)
   }
 
@@ -133,7 +161,7 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {currentAssessment && (
+          {(onchain ? onChainAssessmentId : currentAssessment) && (
             <Button
               size="sm"
               variant="outline"
@@ -141,7 +169,7 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
               onClick={() => setIsDisputeOpen(true)}
               leftIcon={<Scale className="w-3.5 h-3.5" />}
             >
-              Dispute Assessment
+              {onchain ? 'Dispute On-chain Score' : 'Dispute Assessment'}
             </Button>
           )}
           <Button
@@ -405,21 +433,31 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
       >
         <form onSubmit={handleDisputeSubmit} className="space-y-4">
           <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800 text-xs space-y-1">
-            <span className="text-slate-500">Assessment ID:</span>
-            <div className="font-mono text-slate-800 dark:text-slate-200">
-              {currentAssessment?.id}
+            <span className="text-slate-500">
+              {onchain ? 'On-chain attestation (assessment id):' : 'Assessment ID:'}
+            </span>
+            <div className="font-mono text-slate-800 dark:text-slate-200 break-all">
+              {onchain ? onChainAssessmentId ?? 'No on-chain attestation to dispute' : currentAssessment?.id}
             </div>
             <div className="flex gap-4 pt-1 font-mono text-slate-700 dark:text-slate-300">
-              <span>Current Score: {currentAssessment?.score}</span>
-              <span>Tier: {currentAssessment?.risk_category}</span>
+              {onchain ? (
+                <span>Attested Score: {chainBorrower.scoreBps > 0 ? (chainBorrower.scoreBps / 100).toFixed(2) : '—'}</span>
+              ) : (
+                <>
+                  <span>Current Score: {currentAssessment?.score}</span>
+                  <span>Tier: {currentAssessment?.risk_category}</span>
+                </>
+              )}
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+            <label htmlFor="dispute-reason" className="block text-xs font-medium text-slate-700 dark:text-slate-300">
               Reason for Dispute / Clarification
+              {onchain && <span className="font-normal text-slate-500"> (only its hash is written on-chain)</span>}
             </label>
             <textarea
+              id="dispute-reason"
               required
               rows={4}
               value={disputeReason}
@@ -438,8 +476,14 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
             >
               Cancel
             </Button>
-            <Button type="submit" size="sm" variant="destructive">
-              Submit Formal Dispute
+            <Button
+              type="submit"
+              size="sm"
+              variant="destructive"
+              isLoading={isRunning}
+              disabled={onchain && (!chainStatus.canTransact || !onChainAssessmentId)}
+            >
+              {onchain ? 'Open Dispute On-chain' : 'Submit Formal Dispute'}
             </Button>
           </div>
         </form>
