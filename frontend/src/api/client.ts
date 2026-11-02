@@ -1,6 +1,7 @@
 import type {
   AuthenticatedUser,
   BorrowerProfile,
+  ChainConfig,
   CreditAssessment,
   DisputeRecord,
   EvidenceSubmission,
@@ -15,20 +16,26 @@ const API_BASE = '/api/v1'
 
 class ApiClient {
   private token: string | null = null
+  private tokenWallet: string | null = null
   private currentRole: UserRole = 'borrower'
   private demoWallet: string = '0x71C83955620935560935593883839281728392A1'
   private isBackendAvailable: boolean | null = null
 
   constructor() {
     this.token = localStorage.getItem('credora-token')
+    this.tokenWallet = localStorage.getItem('credora-token-wallet')
   }
 
   setToken(token: string | null) {
     this.token = token
     if (token) {
+      this.tokenWallet = this.demoWallet.toLowerCase()
       localStorage.setItem('credora-token', token)
+      localStorage.setItem('credora-token-wallet', this.tokenWallet)
     } else {
+      this.tokenWallet = null
       localStorage.removeItem('credora-token')
+      localStorage.removeItem('credora-token-wallet')
     }
   }
 
@@ -48,8 +55,12 @@ class ApiClient {
     return this.demoWallet
   }
 
+  /** Switching wallets drops the session so the backend never acts for the wrong wallet. */
   setWallet(address: string) {
     this.demoWallet = address
+    if (this.token && this.tokenWallet !== address.toLowerCase()) {
+      this.setToken(null)
+    }
   }
 
   getIsBackendAvailable(): boolean | null {
@@ -64,8 +75,7 @@ class ApiClient {
       const normalizedWallet = this.demoWallet.toLowerCase()
       const { nonce } = await this.requestNonce(normalizedWallet)
       const res = await this.verifySignature(normalizedWallet, nonce, `demo:${nonce}`)
-      this.token = res.access_token
-      return this.token
+      return res.access_token
     } catch {
       return ''
     }
@@ -224,6 +234,26 @@ class ApiClient {
         return mockStore.registerProfile(this.demoWallet, displayName, bio)
       }
       throw error
+    }
+  }
+
+  /**
+   * Ask the backend to verify an IdentityRegistry receipt and link it to the profile.
+   * Requires the backend to be online with chain configuration; there is no offline
+   * fallback because a confirmation cannot be simulated.
+   */
+  async syncIdentity(transactionHash: string): Promise<BorrowerProfile> {
+    return await this.request<BorrowerProfile>('/borrowers/me/identity/sync', {
+      method: 'POST',
+      body: JSON.stringify({ transaction_hash: transactionHash }),
+    })
+  }
+
+  async getChainConfig(): Promise<ChainConfig | null> {
+    try {
+      return await this.request<ChainConfig>('/chain/config')
+    } catch {
+      return null
     }
   }
 
@@ -406,8 +436,9 @@ class InBrowserDemoStore {
       wallet_address: demoWallet,
       display_name: 'Alex Thorne',
       bio: 'Postgrad researcher in Distributed Systems. Seeking micro-grant bridge.',
-      identity_status: 'registered',
-      registration_transaction_hash: '0x4f8a3b89c09d81237e1990234acfe1098234857b293817163839281987654321',
+      // Demo data never carries a transaction hash: nothing was submitted on-chain.
+      identity_status: 'pending',
+      registration_transaction_hash: null,
       created_at: new Date(Date.now() - 14 * 86400000).toISOString(),
     })
 
@@ -515,10 +546,8 @@ class InBrowserDemoStore {
       wallet_address: wallet,
       display_name: displayName,
       bio: bio || null,
-      identity_status: 'registered',
-      registration_transaction_hash: `0x${Array.from({ length: 64 }, () =>
-        Math.floor(Math.random() * 16).toString(16)
-      ).join('')}`,
+      identity_status: 'pending',
+      registration_transaction_hash: null,
       created_at: new Date().toISOString(),
     }
     this.profiles.set(wallet, profile)

@@ -1,0 +1,1098 @@
+{
+  "events": [
+    {
+      "contract": "MockUSDC",
+      "name": "Approval",
+      "signature": "Approval(address,address,uint256)",
+      "topic": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "FaucetClaimed",
+      "signature": "FaucetClaimed(address,uint256,uint256)",
+      "topic": "0xa19a7d2b5bf6a987a66e0eac8a6eb2dbd34ae6a43285849af788b224268ec022"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "FaucetStatusChanged",
+      "signature": "FaucetStatusChanged(bool,uint256)",
+      "topic": "0xb674e5c6168918b636b570ced01abf2d6ffa03c6ae7c0599b0e296e408e617f3"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "RoleAdminChanged",
+      "signature": "RoleAdminChanged(bytes32,bytes32,bytes32)",
+      "topic": "0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "RoleGranted",
+      "signature": "RoleGranted(bytes32,address,address)",
+      "topic": "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "RoleRevoked",
+      "signature": "RoleRevoked(bytes32,address,address)",
+      "topic": "0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "Transfer",
+      "signature": "Transfer(address,address,uint256)",
+      "topic": "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "IdentityProfileUpdated",
+      "signature": "IdentityProfileUpdated(address,bytes32,uint256)",
+      "topic": "0x49d71bf997ecf71eb95cc8d77b3dd6299e53dc27db5c97e4343060af36c71995"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "IdentityRegistered",
+      "signature": "IdentityRegistered(address,bytes32,uint256)",
+      "topic": "0xd1728799782e5ec0cad3e312c9701f68dcc48de6a9d86a1e47a80abfe63a9cb0"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "IdentityReinstated",
+      "signature": "IdentityReinstated(address,address,uint256)",
+      "topic": "0xc6ff07cf7eff22500b5768096993062def788a86de1867170fc76aeb45a1c586"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "IdentityRevoked",
+      "signature": "IdentityRevoked(address,address,bytes32,uint256)",
+      "topic": "0x66209185c91cec1abcd1c4d7a962b92f773f20e929f82b1af7d2e06dcf5758c8"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "Paused",
+      "signature": "Paused(address)",
+      "topic": "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "RoleAdminChanged",
+      "signature": "RoleAdminChanged(bytes32,bytes32,bytes32)",
+      "topic": "0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "RoleGranted",
+      "signature": "RoleGranted(bytes32,address,address)",
+      "topic": "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "RoleRevoked",
+      "signature": "RoleRevoked(bytes32,address,address)",
+      "topic": "0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "Unpaused",
+      "signature": "Unpaused(address)",
+      "topic": "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "Paused",
+      "signature": "Paused(address)",
+      "topic": "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "RoleAdminChanged",
+      "signature": "RoleAdminChanged(bytes32,bytes32,bytes32)",
+      "topic": "0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "RoleGranted",
+      "signature": "RoleGranted(bytes32,address,address)",
+      "topic": "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "RoleRevoked",
+      "signature": "RoleRevoked(bytes32,address,address)",
+      "topic": "0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "ScoreAttested",
+      "signature": "ScoreAttested(address,bytes32,address,uint16,uint32,uint16,uint64,uint256)",
+      "topic": "0x4720a0f27d8284d1f91c8b3315dd5f9d21a2d3be1f3546a89596382412b84f20"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "ScoreDisputeFlagged",
+      "signature": "ScoreDisputeFlagged(bytes32,bool,uint256)",
+      "topic": "0x1cdd05466e7a72f8c828551827d2581736dcd6a0d54a844eae3ce28db48e96ad"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "ScoreRevoked",
+      "signature": "ScoreRevoked(address,bytes32,address,bytes32,uint256)",
+      "topic": "0x219b24e3ed6bc0ca0d05fee25318f8baaa8e921d155c6be27fb8809d9322b39b"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "Unpaused",
+      "signature": "Unpaused(address)",
+      "topic": "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "Approval",
+      "signature": "Approval(address,address,uint256)",
+      "topic": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "Deposit",
+      "signature": "Deposit(address,address,uint256,uint256)",
+      "topic": "0xdcbc1c05240f31ff3ad067ef1ee35ce4997762752e3a095284754544f4c709d7"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "LoanDisbursed",
+      "signature": "LoanDisbursed(uint256,address,uint256,uint256)",
+      "topic": "0xa17f99bd4547aa4c1ccc3829b6f6b53285043ac310a536743995ea2ae594520f"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "LossRecorded",
+      "signature": "LossRecorded(uint256,uint256,uint256)",
+      "topic": "0xd62be145d4a04b9af24240ed4b57736df2edcc06ff1dbde06ca5333fe6698f94"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "Paused",
+      "signature": "Paused(address)",
+      "topic": "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "RepaymentCollected",
+      "signature": "RepaymentCollected(uint256,address,uint256,uint256,uint256)",
+      "topic": "0xebe69df52fe01a39ded2e62f8a54a793001e67eed52dd7507d0351ad56da54ea"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "RoleAdminChanged",
+      "signature": "RoleAdminChanged(bytes32,bytes32,bytes32)",
+      "topic": "0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "RoleGranted",
+      "signature": "RoleGranted(bytes32,address,address)",
+      "topic": "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "RoleRevoked",
+      "signature": "RoleRevoked(bytes32,address,address)",
+      "topic": "0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "TokensRecovered",
+      "signature": "TokensRecovered(address,address,uint256,uint256)",
+      "topic": "0x382768820017a6e69506da8e35e39b17315306885e94830a6b4d97aa3e3587ff"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "Transfer",
+      "signature": "Transfer(address,address,uint256)",
+      "topic": "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "Unpaused",
+      "signature": "Unpaused(address)",
+      "topic": "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "Withdraw",
+      "signature": "Withdraw(address,address,address,uint256,uint256)",
+      "topic": "0xfbde797d201c681b91056529119e0b02407c7bb96a4a2c75c01fc9667232c8db"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "LoanCancelled",
+      "signature": "LoanCancelled(uint256,address,address,uint256)",
+      "topic": "0xc01232cca0e8a17dac769fc52889dda94e8ccd99b3a338fbf3f5fa42b990582b"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "LoanCured",
+      "signature": "LoanCured(uint256,address,uint256)",
+      "topic": "0x95240a60c635ba0dedffcc3dcd2b4771bc1f3810d830d58f67727b8980549a95"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "LoanDefaulted",
+      "signature": "LoanDefaulted(uint256,address,uint256,uint256)",
+      "topic": "0x879ddb97af12a69acc156dd1aed83d9413a91026dd5230c933d5a3d5e0488c1f"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "LoanFunded",
+      "signature": "LoanFunded(uint256,address,address,uint256,uint64,uint256)",
+      "topic": "0x36a8fcb52927f7ae49e96fa0b9e9334ceb628941c3879410c4cf0b68d52172e3"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "LoanOverdue",
+      "signature": "LoanOverdue(uint256,address,uint256,uint256)",
+      "topic": "0xbddd9b96c5f432a292ca60fa38c17e98a7233443a004e12cd371e2aa408406b4"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "LoanParametersUpdated",
+      "signature": "LoanParametersUpdated((uint16,uint64,uint64,uint64,bool,uint256,uint256,uint256),uint256)",
+      "topic": "0x2bbfee9d6fbc71cf3360f45e82533679b0aa813b214ee3011beee727beb33e23"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "LoanRepaid",
+      "signature": "LoanRepaid(uint256,address,uint256,uint256)",
+      "topic": "0x553c9087bff5b534e499a66dac3fa9db2962cd252ea01165239755836ae5345e"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "LoanRequested",
+      "signature": "LoanRequested(uint256,address,bytes32,uint256,uint256,uint32,uint16,uint256)",
+      "topic": "0xfad45146056b75f8c562c2a07736bc0adb5e5468109ca0a264dff05c864a1054"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "LoanRestructured",
+      "signature": "LoanRestructured(uint256,address,uint256,uint256,uint64,uint256)",
+      "topic": "0x5656919375af0cced1f4eac0a9b621b6be50a4e6c8914479dcdc6b8390e811dd"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "Paused",
+      "signature": "Paused(address)",
+      "topic": "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "RepaymentMade",
+      "signature": "RepaymentMade(uint256,address,address,uint256,uint256,uint256,uint256,uint256)",
+      "topic": "0xe67073965b641c64d62ea290ea7e05e1c3931f28c32e44bab984b2e74ae9de29"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "RoleAdminChanged",
+      "signature": "RoleAdminChanged(bytes32,bytes32,bytes32)",
+      "topic": "0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "RoleGranted",
+      "signature": "RoleGranted(bytes32,address,address)",
+      "topic": "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "RoleRevoked",
+      "signature": "RoleRevoked(bytes32,address,address)",
+      "topic": "0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "Unpaused",
+      "signature": "Unpaused(address)",
+      "topic": "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "MilestoneCompleted",
+      "signature": "MilestoneCompleted(uint256,uint16,uint256,uint256)",
+      "topic": "0xec0847d126e0a3da169dbffc6c321d2fc2a29d6a12c056a18ec4747ec8968715"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "MilestoneScheduled",
+      "signature": "MilestoneScheduled(uint256,uint16,uint256,uint64)",
+      "topic": "0xb8f2336b8ba47fec213c6c1df327f96490dd3ab2736b02cac96e239ae02bf684"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "Paused",
+      "signature": "Paused(address)",
+      "topic": "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "RecoveryApproved",
+      "signature": "RecoveryApproved(uint256,uint256,address,uint256,uint16,bytes32,uint256)",
+      "topic": "0x7df451a63345568c036b43b4ad5541cdefa5b9669d1be1ac8b0a7f5664f516d9"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "RecoveryCancelled",
+      "signature": "RecoveryCancelled(uint256,uint256,address,uint256)",
+      "topic": "0xd510f5fb897a977ed4aa1e4cd2c767518481d88a8faa338cb4cb35171aa052b1"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "RecoveryCompleted",
+      "signature": "RecoveryCompleted(uint256,uint256,address,uint256)",
+      "topic": "0x78130418351b84188e5ff9ffa458c01549504d500ff7a67abbe15fcb2a786bbd"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "RecoveryRejected",
+      "signature": "RecoveryRejected(uint256,uint256,address,bytes32,uint256)",
+      "topic": "0x4798ad3ca9396ee47bb5f7e08c556f3858462b9cafd00041ea08aaa72e5ab5fb"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "RecoveryRequested",
+      "signature": "RecoveryRequested(uint256,uint256,address,uint256,uint64,bytes32,uint256)",
+      "topic": "0x8e248e34898004bc392e6b7230b0a54f3d1f99cab83157da88b4a37e831e3343"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "RoleAdminChanged",
+      "signature": "RoleAdminChanged(bytes32,bytes32,bytes32)",
+      "topic": "0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "RoleGranted",
+      "signature": "RoleGranted(bytes32,address,address)",
+      "topic": "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "RoleRevoked",
+      "signature": "RoleRevoked(bytes32,address,address)",
+      "topic": "0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "Unpaused",
+      "signature": "Unpaused(address)",
+      "topic": "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "DisputeOpened",
+      "signature": "DisputeOpened(uint256,bytes32,address,bytes32,uint256)",
+      "topic": "0xb741c4d97ace49964a7c570512fc8638c682cf9766d084a4ef4f48e76d020b7c"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "DisputeResolved",
+      "signature": "DisputeResolved(uint256,bytes32,address,uint8,bytes32,uint256)",
+      "topic": "0x6b3c5738ff032c87d4dc116850e84023c4ff7fc2a90bc37208c11c6f8dd9ed1a"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "DisputeWithdrawn",
+      "signature": "DisputeWithdrawn(uint256,bytes32,address,uint256)",
+      "topic": "0xe7310f00cde1368d586d41b8a3b9630347a8264b48e5931d6b0465de2875da65"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "Paused",
+      "signature": "Paused(address)",
+      "topic": "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "RoleAdminChanged",
+      "signature": "RoleAdminChanged(bytes32,bytes32,bytes32)",
+      "topic": "0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "RoleGranted",
+      "signature": "RoleGranted(bytes32,address,address)",
+      "topic": "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "RoleRevoked",
+      "signature": "RoleRevoked(bytes32,address,address)",
+      "topic": "0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "Unpaused",
+      "signature": "Unpaused(address)",
+      "topic": "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa"
+    }
+  ],
+  "errors": [
+    {
+      "contract": "MockUSDC",
+      "name": "AccessControlBadConfirmation",
+      "signature": "AccessControlBadConfirmation()",
+      "selector": "0x6697b232"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "AccessControlUnauthorizedAccount",
+      "signature": "AccessControlUnauthorizedAccount(address,bytes32)",
+      "selector": "0xe2517d3f"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "ERC20InsufficientAllowance",
+      "signature": "ERC20InsufficientAllowance(address,uint256,uint256)",
+      "selector": "0xfb8f41b2"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "ERC20InsufficientBalance",
+      "signature": "ERC20InsufficientBalance(address,uint256,uint256)",
+      "selector": "0xe450d38c"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "ERC20InvalidApprover",
+      "signature": "ERC20InvalidApprover(address)",
+      "selector": "0xe602df05"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "ERC20InvalidReceiver",
+      "signature": "ERC20InvalidReceiver(address)",
+      "selector": "0xec442f05"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "ERC20InvalidSender",
+      "signature": "ERC20InvalidSender(address)",
+      "selector": "0x96c6fd1e"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "ERC20InvalidSpender",
+      "signature": "ERC20InvalidSpender(address)",
+      "selector": "0x94280d62"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "FaucetCooldownActive",
+      "signature": "FaucetCooldownActive(uint256)",
+      "selector": "0x9ad22e0f"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "FaucetDisabled",
+      "signature": "FaucetDisabled()",
+      "selector": "0xe87ab867"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "MintAmountInvalid",
+      "signature": "MintAmountInvalid(uint256)",
+      "selector": "0xe02403fc"
+    },
+    {
+      "contract": "MockUSDC",
+      "name": "ZeroAddress",
+      "signature": "ZeroAddress()",
+      "selector": "0xd92e233d"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "AccessControlBadConfirmation",
+      "signature": "AccessControlBadConfirmation()",
+      "selector": "0x6697b232"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "AccessControlUnauthorizedAccount",
+      "signature": "AccessControlUnauthorizedAccount(address,bytes32)",
+      "selector": "0xe2517d3f"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "AlreadyRegistered",
+      "signature": "AlreadyRegistered(address)",
+      "selector": "0x45ed80e9"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "EnforcedPause",
+      "signature": "EnforcedPause()",
+      "selector": "0xd93c0665"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "ExpectedPause",
+      "signature": "ExpectedPause()",
+      "selector": "0x8dfc202b"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "IdentityIsRevoked",
+      "signature": "IdentityIsRevoked(address)",
+      "selector": "0xb7572328"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "IdentityNotRevoked",
+      "signature": "IdentityNotRevoked(address)",
+      "selector": "0xf4988d00"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "InvalidProfileHash",
+      "signature": "InvalidProfileHash()",
+      "selector": "0xf9dc017d"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "NotRegistered",
+      "signature": "NotRegistered(address)",
+      "selector": "0xbfc6c337"
+    },
+    {
+      "contract": "IdentityRegistry",
+      "name": "ZeroAddress",
+      "signature": "ZeroAddress()",
+      "selector": "0xd92e233d"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "AccessControlBadConfirmation",
+      "signature": "AccessControlBadConfirmation()",
+      "selector": "0x6697b232"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "AccessControlUnauthorizedAccount",
+      "signature": "AccessControlUnauthorizedAccount(address,bytes32)",
+      "selector": "0xe2517d3f"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "AttestationExists",
+      "signature": "AttestationExists(bytes32)",
+      "selector": "0xb915cda8"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "AttestationNotActive",
+      "signature": "AttestationNotActive(bytes32)",
+      "selector": "0x0e0258e0"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "AttestationNotFound",
+      "signature": "AttestationNotFound(bytes32)",
+      "selector": "0x01fb6dd1"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "EnforcedPause",
+      "signature": "EnforcedPause()",
+      "selector": "0xd93c0665"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "ExpectedPause",
+      "signature": "ExpectedPause()",
+      "selector": "0x8dfc202b"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "IdentityNotRegistered",
+      "signature": "IdentityNotRegistered(address)",
+      "selector": "0xfa9b64eb"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "InvalidAssessmentId",
+      "signature": "InvalidAssessmentId()",
+      "selector": "0x68c72378"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "InvalidExpiry",
+      "signature": "InvalidExpiry(uint64)",
+      "selector": "0x5e23ca68"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "ScoreOutOfRange",
+      "signature": "ScoreOutOfRange(uint16)",
+      "selector": "0xef44ec2f"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "SelfAttestation",
+      "signature": "SelfAttestation(address)",
+      "selector": "0xdd17678b"
+    },
+    {
+      "contract": "CreditScoreRegistry",
+      "name": "ZeroAddress",
+      "signature": "ZeroAddress()",
+      "selector": "0xd92e233d"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "AccessControlBadConfirmation",
+      "signature": "AccessControlBadConfirmation()",
+      "selector": "0x6697b232"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "AccessControlUnauthorizedAccount",
+      "signature": "AccessControlUnauthorizedAccount(address,bytes32)",
+      "selector": "0xe2517d3f"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "EnforcedPause",
+      "signature": "EnforcedPause()",
+      "selector": "0xd93c0665"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "ERC20InsufficientAllowance",
+      "signature": "ERC20InsufficientAllowance(address,uint256,uint256)",
+      "selector": "0xfb8f41b2"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "ERC20InsufficientBalance",
+      "signature": "ERC20InsufficientBalance(address,uint256,uint256)",
+      "selector": "0xe450d38c"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "ERC20InvalidApprover",
+      "signature": "ERC20InvalidApprover(address)",
+      "selector": "0xe602df05"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "ERC20InvalidReceiver",
+      "signature": "ERC20InvalidReceiver(address)",
+      "selector": "0xec442f05"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "ERC20InvalidSender",
+      "signature": "ERC20InvalidSender(address)",
+      "selector": "0x96c6fd1e"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "ERC20InvalidSpender",
+      "signature": "ERC20InvalidSpender(address)",
+      "selector": "0x94280d62"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "ERC4626ExceededMaxDeposit",
+      "signature": "ERC4626ExceededMaxDeposit(address,uint256,uint256)",
+      "selector": "0x79012fb2"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "ERC4626ExceededMaxMint",
+      "signature": "ERC4626ExceededMaxMint(address,uint256,uint256)",
+      "selector": "0x284ff667"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "ERC4626ExceededMaxRedeem",
+      "signature": "ERC4626ExceededMaxRedeem(address,uint256,uint256)",
+      "selector": "0xb94abeec"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "ERC4626ExceededMaxWithdraw",
+      "signature": "ERC4626ExceededMaxWithdraw(address,uint256,uint256)",
+      "selector": "0xfe9cceec"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "ExpectedPause",
+      "signature": "ExpectedPause()",
+      "selector": "0x8dfc202b"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "InsufficientLiquidity",
+      "signature": "InsufficientLiquidity(uint256,uint256)",
+      "selector": "0xa17e11d5"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "PrincipalExceedsBorrowed",
+      "signature": "PrincipalExceedsBorrowed(uint256,uint256)",
+      "selector": "0xb593cc3a"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "RecoveryExceedsSurplus",
+      "signature": "RecoveryExceedsSurplus(uint256,uint256)",
+      "selector": "0xadeea29a"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "ReentrancyGuardReentrantCall",
+      "signature": "ReentrancyGuardReentrantCall()",
+      "selector": "0x3ee5aeb5"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "SafeERC20FailedOperation",
+      "signature": "SafeERC20FailedOperation(address)",
+      "selector": "0x5274afe7"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "ZeroAddress",
+      "signature": "ZeroAddress()",
+      "selector": "0xd92e233d"
+    },
+    {
+      "contract": "LendingPool",
+      "name": "ZeroAmount",
+      "signature": "ZeroAmount()",
+      "selector": "0x1f2a2005"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "AccessControlBadConfirmation",
+      "signature": "AccessControlBadConfirmation()",
+      "selector": "0x6697b232"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "AccessControlUnauthorizedAccount",
+      "signature": "AccessControlUnauthorizedAccount(address,bytes32)",
+      "selector": "0xe2517d3f"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "DefaultNotReached",
+      "signature": "DefaultNotReached(uint256,uint64)",
+      "selector": "0x3d14d06a"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "EnforcedPause",
+      "signature": "EnforcedPause()",
+      "selector": "0xd93c0665"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "ExceedsEligibleLimit",
+      "signature": "ExceedsEligibleLimit(uint256,uint256)",
+      "selector": "0x1d9a2979"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "ExpectedPause",
+      "signature": "ExpectedPause()",
+      "selector": "0x8dfc202b"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "IdentityNotRegistered",
+      "signature": "IdentityNotRegistered(address)",
+      "selector": "0xfa9b64eb"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "InvalidDueDate",
+      "signature": "InvalidDueDate(uint64)",
+      "selector": "0xa938bf5d"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "InvalidDuration",
+      "signature": "InvalidDuration(uint32)",
+      "selector": "0xc6e91130"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "InvalidLoanStatus",
+      "signature": "InvalidLoanStatus(uint256,uint8)",
+      "selector": "0x49cc3f09"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "InvalidParameters",
+      "signature": "InvalidParameters()",
+      "selector": "0xe5239090"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "LoanNotFound",
+      "signature": "LoanNotFound(uint256)",
+      "selector": "0x806b2c5e"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "LoanNotOverdue",
+      "signature": "LoanNotOverdue(uint256)",
+      "selector": "0x0f9751f7"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "NotAuthorizedToCancel",
+      "signature": "NotAuthorizedToCancel(uint256,address)",
+      "selector": "0x04aee182"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "NoValidCreditScore",
+      "signature": "NoValidCreditScore(address)",
+      "selector": "0x91fda6c3"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "OpenLoanExists",
+      "signature": "OpenLoanExists(address,uint256)",
+      "selector": "0x43d1823a"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "PrincipalOutOfRange",
+      "signature": "PrincipalOutOfRange(uint256,uint256,uint256)",
+      "selector": "0x9b4765b5"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "ReentrancyGuardReentrantCall",
+      "signature": "ReentrancyGuardReentrantCall()",
+      "selector": "0x3ee5aeb5"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "RepaymentExceedsOutstanding",
+      "signature": "RepaymentExceedsOutstanding(uint256,uint256)",
+      "selector": "0x9b1391d7"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "RequestExpired",
+      "signature": "RequestExpired(uint256,uint64)",
+      "selector": "0xa3242b71"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "RestructureUnderpays",
+      "signature": "RestructureUnderpays(uint256,uint256)",
+      "selector": "0x1260946e"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "ZeroAddress",
+      "signature": "ZeroAddress()",
+      "selector": "0xd92e233d"
+    },
+    {
+      "contract": "LoanManager",
+      "name": "ZeroAmount",
+      "signature": "ZeroAmount()",
+      "selector": "0x1f2a2005"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "AccessControlBadConfirmation",
+      "signature": "AccessControlBadConfirmation()",
+      "selector": "0x6697b232"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "AccessControlUnauthorizedAccount",
+      "signature": "AccessControlUnauthorizedAccount(address,bytes32)",
+      "selector": "0xe2517d3f"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "EnforcedPause",
+      "signature": "EnforcedPause()",
+      "selector": "0xd93c0665"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "ExpectedPause",
+      "signature": "ExpectedPause()",
+      "selector": "0x8dfc202b"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "InvalidDueDate",
+      "signature": "InvalidDueDate(uint64)",
+      "selector": "0xa938bf5d"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "InvalidMilestones",
+      "signature": "InvalidMilestones()",
+      "selector": "0xd6befc19"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "InvalidReasonHash",
+      "signature": "InvalidReasonHash()",
+      "selector": "0x3321d0ce"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "InvalidRequestStatus",
+      "signature": "InvalidRequestStatus(uint256,uint8)",
+      "selector": "0xd4155a66"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "LoanNotEligible",
+      "signature": "LoanNotEligible(uint256)",
+      "selector": "0x6e683a6b"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "MilestoneNotFunded",
+      "signature": "MilestoneNotFunded(uint256,uint256)",
+      "selector": "0xc1708c28"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "MilestoneOutOfOrder",
+      "signature": "MilestoneOutOfOrder(uint16,uint16)",
+      "selector": "0xb63aa25e"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "NotLoanBorrower",
+      "signature": "NotLoanBorrower(uint256,address)",
+      "selector": "0x9bde2931"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "OfficerConflict",
+      "signature": "OfficerConflict(address)",
+      "selector": "0xc7abd6be"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "ProposalUnderpays",
+      "signature": "ProposalUnderpays(uint256,uint256)",
+      "selector": "0xcef8e7e2"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "RequestAlreadyOpen",
+      "signature": "RequestAlreadyOpen(uint256,uint256)",
+      "selector": "0x78c375f2"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "RequestNotFound",
+      "signature": "RequestNotFound(uint256)",
+      "selector": "0x4ec726c7"
+    },
+    {
+      "contract": "RecoveryManager",
+      "name": "ZeroAddress",
+      "signature": "ZeroAddress()",
+      "selector": "0xd92e233d"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "AccessControlBadConfirmation",
+      "signature": "AccessControlBadConfirmation()",
+      "selector": "0x6697b232"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "AccessControlUnauthorizedAccount",
+      "signature": "AccessControlUnauthorizedAccount(address,bytes32)",
+      "selector": "0xe2517d3f"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "AttestationNotActive",
+      "signature": "AttestationNotActive(bytes32)",
+      "selector": "0x0e0258e0"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "DisputeAlreadyOpen",
+      "signature": "DisputeAlreadyOpen(bytes32,uint256)",
+      "selector": "0x91e77981"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "DisputeNotFound",
+      "signature": "DisputeNotFound(uint256)",
+      "selector": "0x4294e0f7"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "DisputeNotOpen",
+      "signature": "DisputeNotOpen(uint256,uint8)",
+      "selector": "0x4b9d6b88"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "EnforcedPause",
+      "signature": "EnforcedPause()",
+      "selector": "0xd93c0665"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "ExpectedPause",
+      "signature": "ExpectedPause()",
+      "selector": "0x8dfc202b"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "InvalidReasonHash",
+      "signature": "InvalidReasonHash()",
+      "selector": "0x3321d0ce"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "InvalidResolutionHash",
+      "signature": "InvalidResolutionHash()",
+      "selector": "0x27302b7f"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "NotAttestationOwner",
+      "signature": "NotAttestationOwner(bytes32,address)",
+      "selector": "0x8d45690d"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "NotDisputeBorrower",
+      "signature": "NotDisputeBorrower(uint256,address)",
+      "selector": "0xc0fc95c3"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "ReviewerConflict",
+      "signature": "ReviewerConflict(address)",
+      "selector": "0x127aaaa0"
+    },
+    {
+      "contract": "DisputeManager",
+      "name": "ZeroAddress",
+      "signature": "ZeroAddress()",
+      "selector": "0xd92e233d"
+    }
+  ]
+}

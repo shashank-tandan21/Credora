@@ -3,10 +3,13 @@ from uuid import uuid4
 
 from fastapi import HTTPException, status
 
+from app.config import get_settings
 from app.schemas.auth import AuthenticatedUser
 from app.schemas.borrower import BorrowerProfileResponse, BorrowerRegistrationRequest
+from app.schemas.chain import TransactionSyncRequest
 from app.repositories import demo_store
 from app.repositories.demo import DemoBorrowerProfile
+from app.services.chain_service import chain_service
 
 
 class BorrowerService:
@@ -42,6 +45,40 @@ class BorrowerService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Borrower profile has not been registered.",
             )
+        return self._to_response(profile)
+
+    async def sync_identity(
+        self, user: AuthenticatedUser, request: TransactionSyncRequest
+    ) -> BorrowerProfileResponse:
+        """Mark the identity registered only after an IdentityRegistered receipt is verified.
+
+        Idempotent for the same transaction hash; a different hash for an already
+        registered identity is a conflict.
+        """
+        profile = demo_store.profiles_by_wallet.get(user.wallet_address)
+        if profile is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Borrower profile has not been registered.",
+            )
+
+        transaction_hash = request.transaction_hash.lower()
+        if profile.identity_status == "registered":
+            if profile.registration_transaction_hash == transaction_hash:
+                return self._to_response(profile)
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Identity is already linked to a different registration transaction.",
+            )
+
+        await chain_service.verify_event(
+            transaction_hash,
+            get_settings().identity_registry_address,
+            "IdentityRegistry.IdentityRegistered",
+            user.wallet_address,
+        )
+        profile.identity_status = "registered"
+        profile.registration_transaction_hash = transaction_hash
         return self._to_response(profile)
 
     @staticmethod

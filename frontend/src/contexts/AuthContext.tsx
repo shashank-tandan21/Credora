@@ -1,16 +1,18 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
+import { useConnection } from 'wagmi'
 import { api } from '../api/client'
-import type { BorrowerProfile, TransactionStatus, UserRole } from '../types'
+import { defaultDemoMode } from '../web3/config'
+import type { BorrowerProfile, NetworkMode, TransactionStatus, UserRole } from '../types'
 
 interface AuthContextType {
   walletAddress: string
   role: UserRole
-  networkMode: 'demo' | 'sepolia'
+  networkMode: NetworkMode
   isConnected: boolean
   profile: BorrowerProfile | null
   activeTx: TransactionStatus | null
   setRole: (role: UserRole) => void
-  setNetworkMode: (mode: 'demo' | 'sepolia') => void
+  setNetworkMode: (mode: NetworkMode) => void
   connectWallet: (customAddress?: string) => Promise<void>
   disconnectWallet: () => void
   refreshProfile: () => Promise<void>
@@ -21,7 +23,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const DEFAULT_DEMO_WALLET = '0x71C83955620935560935593883839281728392A1'
 
+function initialNetworkMode(): NetworkMode {
+  const saved = localStorage.getItem('credora-network')
+  if (saved === 'demo') return 'demo'
+  // 'sepolia' is the value stored before local Hardhat support existed.
+  if (saved === 'onchain' || saved === 'sepolia') return 'onchain'
+  return defaultDemoMode ? 'demo' : 'onchain'
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const connection = useConnection()
+
   const [walletAddress, setWalletAddress] = useState<string>(() => {
     return localStorage.getItem('credora-wallet') || DEFAULT_DEMO_WALLET
   })
@@ -30,19 +42,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return (localStorage.getItem('credora-role') as UserRole) || 'borrower'
   })
 
-  const [networkMode, setNetworkModeState] = useState<'demo' | 'sepolia'>(() => {
-    return (localStorage.getItem('credora-network') as 'demo' | 'sepolia') || 'demo'
-  })
+  const [networkMode, setNetworkModeState] = useState<NetworkMode>(initialNetworkMode)
 
-  const [isConnected, setIsConnected] = useState<boolean>(true)
+  const [isDemoConnected, setIsDemoConnected] = useState<boolean>(true)
   const [profile, setProfile] = useState<BorrowerProfile | null>(null)
   const [activeTx, setActiveTx] = useState<TransactionStatus | null>(null)
-
-  useEffect(() => {
-    api.setWallet(walletAddress)
-    api.setRole(role)
-    refreshProfile()
-  }, [walletAddress, role])
 
   const refreshProfile = async () => {
     try {
@@ -59,29 +63,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('credora-role', newRole)
   }
 
-  const setNetworkMode = (mode: 'demo' | 'sepolia') => {
+  const setNetworkMode = (mode: NetworkMode) => {
     setNetworkModeState(mode)
+    setActiveTx(null)
     localStorage.setItem('credora-network', mode)
   }
 
   const connectWallet = async (customAddress?: string) => {
     const target = customAddress || DEFAULT_DEMO_WALLET
     setWalletAddress(target)
-    setIsConnected(true)
+    setIsDemoConnected(true)
     localStorage.setItem('credora-wallet', target)
     api.setWallet(target)
     await refreshProfile()
   }
 
   const disconnectWallet = () => {
-    setIsConnected(false)
+    setIsDemoConnected(false)
     api.setToken(null)
     setProfile(null)
   }
 
-  const setTransactionStatus = (status: TransactionStatus | null) => {
-    setActiveTx(status)
-  }
+  useEffect(() => {
+    api.setWallet(walletAddress)
+    api.setRole(role)
+    refreshProfile()
+  }, [walletAddress, role])
+
+  // In on-chain mode the backend session must belong to the connected wallet, otherwise
+  // receipt verification (which matches the event's wallet) could never succeed.
+  useEffect(() => {
+    if (networkMode !== 'onchain' || !connection.address) return
+    if (connection.address.toLowerCase() !== walletAddress.toLowerCase()) {
+      connectWallet(connection.address)
+    }
+  }, [networkMode, connection.address, walletAddress])
 
   return (
     <AuthContext.Provider
@@ -89,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         walletAddress,
         role,
         networkMode,
-        isConnected,
+        isConnected: networkMode === 'onchain' ? connection.isConnected : isDemoConnected,
         profile,
         activeTx,
         setRole,
@@ -97,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         connectWallet,
         disconnectWallet,
         refreshProfile,
-        setTransactionStatus,
+        setTransactionStatus: setActiveTx,
       }}
     >
       {children}
@@ -112,4 +128,3 @@ export const useAuth = () => {
   }
   return context
 }
-

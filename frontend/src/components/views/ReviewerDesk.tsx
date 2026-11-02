@@ -9,10 +9,13 @@ import { Button } from '../common/Button'
 import { Badge } from '../common/Badge'
 import { Modal } from '../common/Modal'
 import { api } from '../../api/client'
+import { OperationsConsole } from '../web3/OperationsConsole'
+import { useAuth } from '../../contexts/AuthContext'
 import { formatDate, truncateAddress } from '../../utils/cn'
 import type { DisputeRecord } from '../../types'
 
 export const ReviewerDesk: React.FC = () => {
+  const { networkMode } = useAuth()
   const [disputes, setDisputes] = useState<DisputeRecord[]>([])
   const [selectedDispute, setSelectedDispute] = useState<DisputeRecord | null>(null)
   const [reviewNotes, setReviewNotes] = useState('')
@@ -43,7 +46,7 @@ export const ReviewerDesk: React.FC = () => {
       setNotification(
         `Dispute ${selectedDispute.id} has been marked as ${
           status === 'resolved_adjusted' ? 'Approved & Score Adjusted' : 'Rejected'
-        }. Audit log recorded.`
+        }. Demo decision recorded in this browser only (no blockchain transaction).`
       )
       setTimeout(() => setNotification(null), 6000)
     } finally {
@@ -72,6 +75,8 @@ export const ReviewerDesk: React.FC = () => {
         </p>
       </div>
 
+      {networkMode === 'onchain' && <OperationsConsole />}
+
       {/* Queue Table */}
       <Card>
         <CardHeader>
@@ -82,7 +87,7 @@ export const ReviewerDesk: React.FC = () => {
                 Active Dispute Queue
               </CardTitle>
               <CardDescription>
-                Borrower filings challenging algorithmic assessment weights
+                Demo queue (simulated in this browser). On-chain disputes appear under On-chain Operations.
               </CardDescription>
             </div>
             <Badge variant="indigo" size="sm">
