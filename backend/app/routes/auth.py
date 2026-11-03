@@ -21,4 +21,4 @@ async def create_auth_nonce(request: NonceRequest) -> NonceResponse:
 async def verify_wallet_signature(
     request: VerifySignatureRequest,
 ) -> VerifySignatureResponse:
-    return auth_service.verify_signature(request)
+    return await auth_service.verify_signature(request)

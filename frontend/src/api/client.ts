@@ -168,7 +168,8 @@ class ApiClient {
   async verifySignature(
     walletAddress: string,
     nonce: string,
-    signature: string
+    signature: string,
+    message?: string
   ): Promise<{ access_token: string; user: AuthenticatedUser }> {
     try {
       const data = await this.request<{
@@ -180,6 +181,7 @@ class ApiClient {
           wallet_address: walletAddress,
           nonce,
           signature,
+          ...(message ? { message } : {}),
         }),
       })
       this.setToken(data.access_token)

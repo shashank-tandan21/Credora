@@ -22,8 +22,9 @@ its model, route, or UI shell exists.
 ## 2. Current repository state
 
 The repository contains the FastAPI backend, the React frontend, the Hardhat
-contracts project, and documentation. Production repositories wired into the
-services and the Sepolia deployment are pending.
+contracts project, and documentation. Production repositories are wired into
+the services; live PostgreSQL integration evidence and the Sepolia deployment
+remain pending.
 
 Completed backend/demo capabilities:
 
@@ -37,9 +38,9 @@ Completed backend/demo capabilities:
 - Loan quote, loan request, repayment schedule generation, and pool statistics
 - Backend tests and repeatable manual API workflow
 
-Important current limitation: SQLAlchemy models and an async database session
-factory exist, but the API services still use the in-memory demo store. This is
-not PostgreSQL persistence until Phase 1 is complete.
+Demo mode uses an in-memory repository. Production mode uses the PostgreSQL
+repository and requires a configured database; a live PostgreSQL migration and
+integration run remain outstanding.
 
 Completed blockchain/Web3 capabilities (Owner B, PR 3):
 
@@ -523,9 +524,9 @@ identity registration with backend verification, attestation, borrowing,
 repayment, deposit, a revert shown as failed, Demo Mode labelling, phone-width
 layout, and the wrong-network block. Screenshots: [`docs/evidence/pr-3`](./evidence/pr-3).
 
-Open item for Owner A: wallet login still uses the demo `demo:<nonce>`
-signature in every mode. The frontend binds the backend session to the
-connected wallet, but real EIP-4361 verification remains a backend task.
+Production wallet login now signs and verifies an EIP-4361-shaped challenge;
+Demo Mode continues to use the local `demo:<nonce>` signature. Browser evidence
+for the production wallet path remains open.
 
 ### Acceptance criteria
 
@@ -847,14 +848,14 @@ The PR is ready for review only when all applicable checks below are true:
 | Capability | Current state | Target evidence |
 |---|---|---|
 | Health checks | Demo/backend ready | Automated health test |
-| Wallet authentication | Demo nonce/signature; frontend binds the session to the connected wallet | Real signature tests outside demo |
+| Wallet authentication | Demo nonce/signature and production EIP-4361-shaped challenge verification | Real wallet browser smoke evidence |
 | Borrower registration | IdentityRegistry receipt verified by the backend; profile still in-memory | Persistent record and IdentityRegistry receipt |
 | Evidence and scoring | In-memory academic model | PostgreSQL repository tests and disclosure |
-| Lender pool | Demo statistics only | Deposit/withdrawal/position/reconciliation tests |
+| Lender pool | Demo and PostgreSQL deposit, withdrawal, and position workflows implemented; chain reconciliation remains open | Deposit/withdrawal/position/reconciliation tests |
 | Loans | Demo requested state | Contract-aware lifecycle and receipt sync |
-| Repayment | Not implemented | Schedule, partial repayment, overdue, receipt tests |
-| Recovery | Not implemented | Eligibility, milestones, progress, ownership tests |
-| Disputes | Not implemented | Reviewer roles, resolution, audit tests |
+| Repayment | Demo and PostgreSQL repository persistence implemented; chain receipt sync remains application-supplied | Schedule, partial repayment, overdue, receipt tests |
+| Recovery | Demo and PostgreSQL repository persistence implemented | Eligibility, milestones, progress, ownership tests |
+| Disputes | Demo and PostgreSQL persistence with resolution audit records implemented | Reviewer roles, resolution, audit tests |
 | Frontend | Phases 6–8 ready | React 19 + TS + Tailwind v4 + Recharts + Dual theme, typecheck & build passing |
 | Wallet integration | Wagmi/viem lifecycle, on-chain flows in all portals | Unit, local E2E, and browser smoke tests |
 | Contracts | Complete: 7 contracts, 97 tests, 97.6% line coverage | Hardhat compile/unit/integration evidence |
@@ -876,3 +877,7 @@ documents.
 | 2026-11-02 | B/C | Phase 9 | Wagmi/viem wallet layer and transaction lifecycle wired into all portals; 27 unit tests, local-chain E2E, 11-step browser smoke test; demo actions no longer fabricate hashes | Complete |
 | 2026-11-02 | B | Phase 11 | Test-gated Sepolia deploy, verify, and smoke scripts with keystore secrets; deployment deferred until a funded testnet key is available | Deferred |
 | 2026-11-02 | B | Dependencies | Added pinned `hardhat 3.21.2`, `@openzeppelin/contracts 5.6.1`, `wagmi 3.7.9`, `viem 2.57.14`, `@tanstack/react-query 5.105.1`, `vitest 5.0.5`, `playwright-core 1.56.1` | Recorded |
+| 2026-11-03 | A | Phases 1–4 | Added demo repayment preparation/sync with idempotency, recovery requests and milestones, borrower disputes with reviewer authorization, numeric database constraints, workflow migration, and repository-backed borrower/credit/loan/pool services; 32 backend tests pass | Partial — demo workflows complete; production workflow persistence and real signature verification remain |
+| 2026-11-03 | A | Persistence and authentication | Added PostgreSQL repository persistence for repayments, recovery, disputes, and audit records; added idempotent migration guards; implemented production Ethereum signature recovery and frontend challenge signing; 33 backend tests pass | Partial — browser evidence and lender/event synchronization remain |
+| 2026-11-03 | A | Lender workflows | Added authenticated deposit, withdrawal, position, idempotency, confirmation, and insufficient-balance handling for demo and PostgreSQL repositories; 34 backend tests pass | Partial — chain event reconciliation remains |
+| 2026-11-03 | A | Dependency review | Re-ran the contracts audit: 9 high and 3 moderate advisories remain; safe remediation requires major Hardhat/plugin upgrades or packages without available fixes | Blocked pending compatibility review |

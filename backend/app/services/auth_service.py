@@ -1,6 +1,8 @@
 import secrets
 from datetime import UTC, datetime, timedelta
 
+from eth_account import Account
+from eth_account.messages import encode_defunct
 from fastapi import HTTPException, status
 
 from app.config import get_settings
@@ -10,25 +12,33 @@ from app.schemas.auth import (
     VerifySignatureRequest,
     VerifySignatureResponse,
 )
-from app.repositories import demo_store
+from app.repositories import get_repository
+from app.services.repository_support import repository_call
 
 
 class AuthService:
     def __init__(self) -> None:
-        self._nonces: dict[str, tuple[str, datetime]] = {}
+        self._nonces: dict[str, tuple[str, datetime, str]] = {}
 
     def create_nonce(self, wallet_address: str) -> NonceResponse:
         settings = get_settings()
         nonce = secrets.token_urlsafe(32)
         expires_at = datetime.now(UTC) + timedelta(seconds=settings.auth_nonce_expiry_seconds)
         normalized_address = wallet_address.lower()
-        self._nonces[normalized_address] = (nonce, expires_at)
+        issued_at = datetime.now(UTC)
+        settings = get_settings()
         message = (
-            "REBOUND wallet authentication\n"
-            f"Wallet: {normalized_address}\n"
+            f"{settings.auth_domain} wants you to sign in with your Ethereum account:\n"
+            f"{normalized_address}\n\n"
+            "Sign in to REBOUND.\n\n"
+            f"URI: {settings.auth_uri}\n"
+            "Version: 1\n"
+            f"Chain ID: {settings.chain_id}\n"
             f"Nonce: {nonce}\n"
-            f"Expires: {expires_at.isoformat()}"
+            f"Issued At: {issued_at.isoformat()}\n"
+            f"Expiration Time: {expires_at.isoformat()}"
         )
+        self._nonces[normalized_address] = (nonce, expires_at, message)
         return NonceResponse(
             wallet_address=normalized_address,
             nonce=nonce,
@@ -36,7 +46,7 @@ class AuthService:
             expires_at=expires_at,
         )
 
-    def verify_signature(self, request: VerifySignatureRequest) -> VerifySignatureResponse:
+    async def verify_signature(self, request: VerifySignatureRequest) -> VerifySignatureResponse:
         settings = get_settings()
         normalized_address = request.wallet_address.lower()
         stored = self._nonces.get(normalized_address)
@@ -48,43 +58,60 @@ class AuthService:
                 detail="Nonce is missing, mismatched, or expired.",
             )
 
-        if not settings.demo_mode:
-            raise HTTPException(
-                status_code=status.HTTP_501_NOT_IMPLEMENTED,
-                detail="Ethereum signature verification is not configured.",
-            )
-
-        if request.signature != f"demo:{request.nonce}":
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Demo signature is invalid.",
-            )
+        if settings.demo_mode:
+            if request.signature != f"demo:{request.nonce}":
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Demo signature is invalid.",
+                )
+        else:
+            if request.message != stored[2]:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Authentication message is invalid or expired.",
+                )
+            try:
+                recovered = Account.recover_message(
+                    encode_defunct(text=stored[2]), signature=request.signature
+                )
+            except (TypeError, ValueError):
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Ethereum signature is invalid.",
+                ) from None
+            if recovered.lower() != normalized_address:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Ethereum signature does not match the wallet.",
+                )
 
         del self._nonces[normalized_address]
-        demo_store.get_or_create_user(normalized_address)
+        user_record = await repository_call(
+            get_repository().get_or_create_user, normalized_address
+        )
         user = AuthenticatedUser(
             wallet_address=normalized_address,
-            role="borrower",
-            demo_mode=True,
+            role=user_record.role,
+            demo_mode=settings.demo_mode,
         )
-        token = f"demo-token:{secrets.token_urlsafe(24)}"
-        demo_store.create_token(normalized_address, token)
+        token = f"session-token:{secrets.token_urlsafe(24)}"
+        await repository_call(get_repository().create_token, normalized_address, token)
         return VerifySignatureResponse(
             access_token=token,
             user=user,
         )
 
-    def get_user_for_token(self, token: str) -> AuthenticatedUser | None:
-        wallet_address = demo_store.wallet_by_token.get(token)
+    async def get_user_for_token(self, token: str) -> AuthenticatedUser | None:
+        wallet_address = await repository_call(get_repository().get_user_for_token, token)
         if wallet_address is None:
             return None
-        user = demo_store.users_by_wallet.get(wallet_address)
-        if user is None:
+        role = await repository_call(get_repository().get_user_role, wallet_address)
+        if role is None:
             return None
         return AuthenticatedUser(
-            wallet_address=user.wallet_address,
-            role="borrower",
-            demo_mode=True,
+            wallet_address=wallet_address,
+            role=role,
+            demo_mode=get_settings().demo_mode,
         )
 
 

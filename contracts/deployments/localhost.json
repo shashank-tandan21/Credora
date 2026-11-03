@@ -1,7 +1,7 @@
 {
   "network": "localhost",
   "chainId": 31337,
-  "deployedAt": "2026-11-02T13:53:11.458Z",
+  "deployedAt": "2026-11-03T14:06:49.624Z",
   "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
   "operator": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
   "seeded": true,
@@ -18,7 +18,7 @@
   "contracts": {
     "MockUSDC": {
       "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-      "transactionHash": "0xa4c15efce4998c432d84aaf2ecfbef4cfc91ae9e083ec1e36b5f427fcf8edccb",
+      "transactionHash": "0x016ce70107b6dba0353b4d2126f745cc74bbd5bb88ec6d4c45a5d3b592951bf6",
       "blockNumber": 1,
       "constructorArgs": [
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
@@ -27,7 +27,7 @@
     },
     "IdentityRegistry": {
       "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-      "transactionHash": "0x40dd3c1acc464f1f0d65950fba53fa5213b4b52b97cd91d909e7cb40b45c5f59",
+      "transactionHash": "0x2832ac7bfd9d817b7e5c7571956804089e549661186597133b3495dd568507c5",
       "blockNumber": 2,
       "constructorArgs": [
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
@@ -35,7 +35,7 @@
     },
     "CreditScoreRegistry": {
       "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-      "transactionHash": "0xf9930bcbfde572951d907bb41756fbd086bbd94ce8d8b7a18a33f89dcf9676ef",
+      "transactionHash": "0x2d59b7c38fa9b3a49bc4f6f9796e7f9ebed8c7f8b5eb78b18a44bbe7d6707512",
       "blockNumber": 3,
       "constructorArgs": [
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
@@ -44,7 +44,7 @@
     },
     "LendingPool": {
       "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-      "transactionHash": "0xa4fdd1ca874f43e5669cf881848648edc24266df32f4c4a8cc29050c9031d24e",
+      "transactionHash": "0x6160640ca0433bc16b66a1584f597f3f1ed31b48aeabd7532d79bca0a6d96a22",
       "blockNumber": 4,
       "constructorArgs": [
         "0x5FbDB2315678afecb367f032d93F642f64180aa3",
@@ -53,7 +53,7 @@
     },
     "LoanManager": {
       "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
-      "transactionHash": "0x45d088ca661c6643cccf1720cf4557b7a840879f47247e627eca4dc0962e2117",
+      "transactionHash": "0xcff2715a2449a9218f64b8880891e350ef42c3395ce58663e5aa770f635294a3",
       "blockNumber": 5,
       "constructorArgs": [
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
@@ -74,7 +74,7 @@
     },
     "RecoveryManager": {
       "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-      "transactionHash": "0x17041a40cc8baebbf36611d4da27253c2dc6702be18b483d48c64353589aeb2e",
+      "transactionHash": "0x2b2d0addf73edb555ea77014a1102c988bf291094ec26d756cee94aa52947419",
       "blockNumber": 6,
       "constructorArgs": [
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
@@ -83,7 +83,7 @@
     },
     "DisputeManager": {
       "address": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
-      "transactionHash": "0xf9726d8391b22f839a0c6355a209e0ad5adde483223c33d7654c39555f72a86e",
+      "transactionHash": "0x2055efc48e5a0703e301cd3b1d719bd7776639378ea71f056b363f1c910e543b",
       "blockNumber": 7,
       "constructorArgs": [
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",

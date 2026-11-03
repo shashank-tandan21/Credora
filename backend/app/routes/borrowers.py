@@ -18,12 +18,12 @@ async def register_borrower(
     request: BorrowerRegistrationRequest,
     current_user: CurrentUser,
 ) -> BorrowerProfileResponse:
-    return borrower_service.register(current_user, request)
+    return await borrower_service.register(current_user, request)
 
 
 @router.get("/me", response_model=BorrowerProfileResponse)
 async def get_my_borrower_profile(current_user: CurrentUser) -> BorrowerProfileResponse:
-    return borrower_service.get_profile(current_user)
+    return await borrower_service.get_profile(current_user)
 
 
 @router.post("/me/identity/sync", response_model=BorrowerProfileResponse)

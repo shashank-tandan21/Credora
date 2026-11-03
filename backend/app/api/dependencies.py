@@ -19,7 +19,7 @@ async def get_current_user(
             detail="Bearer authentication is required.",
         )
 
-    user = auth_service.get_user_for_token(credentials.credentials)
+    user = await auth_service.get_user_for_token(credentials.credentials)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

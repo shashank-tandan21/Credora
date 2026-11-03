@@ -19,6 +19,7 @@ class VerifySignatureRequest(BaseModel):
     wallet_address: str = Field(pattern=r"^0x[a-fA-F0-9]{40}$")
     nonce: str = Field(min_length=16, max_length=128)
     signature: str = Field(min_length=8, max_length=1024)
+    message: str | None = Field(default=None, max_length=2048)
 
 
 class AuthenticatedUser(BaseModel):
