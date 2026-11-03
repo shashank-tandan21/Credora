@@ -66,7 +66,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
           <div className="p-4 rounded-xl bg-white dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800/70">
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Pool Liquidity</span>
             <div className="text-xl font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">
-              $25,000.00
+              ₹25,000.00
             </div>
             <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -150,7 +150,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 Instant Pool Disbursement
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Qualified borrowers select loan amounts up to their certified limit. The smart contract validates their attestation and disburses MockUSDC directly from the liquidity pool into their wallet.
+                Qualified borrowers select loan amounts up to their certified limit. The smart contract validates their attestation and disburses loan capital directly from the liquidity pool into their wallet.
               </p>
             </div>
             <div className="pt-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
@@ -169,7 +169,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 Amortized Repayment & Yield
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Borrowers pay scheduled installments in USDC. Repaid principal and 12% APR interest flow back into the pool, increasing the value of lenders' pool shares in real time.
+                Borrowers pay scheduled installments in rupees. Repaid principal and 12% APR interest flow back into the pool, increasing the value of lenders' pool shares in real time.
               </p>
             </div>
             <div className="pt-2 text-xs text-indigo-600 dark:text-indigo-400 font-medium flex items-center gap-1">
@@ -235,7 +235,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                   Lending Pool Desk
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Provide USDC liquidity into the non-custodial lending pool, earn passive yield from loan interest, and track your liquidity share.
+                  Provide liquidity into the non-custodial lending pool, earn passive yield from loan interest, and track your liquidity share.
                 </p>
               </div>
             </div>
@@ -309,7 +309,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                 <td className="p-3 font-medium text-slate-900 dark:text-white">Affordability</td>
                 <td className="p-3 font-mono font-bold text-blue-600 dark:text-blue-400">25%</td>
                 <td className="p-3 text-slate-600 dark:text-slate-400">Net disposable monthly margin after verified recurring obligations</td>
-                <td className="p-3 text-slate-500 dark:text-slate-400">&gt; $300 buffer</td>
+                <td className="p-3 text-slate-500 dark:text-slate-400">&gt; ₹25,000 buffer</td>
               </tr>
               <tr>
                 <td className="p-3 font-medium text-slate-900 dark:text-white">Cash-flow Stability</td>

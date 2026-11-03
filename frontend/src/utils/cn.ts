@@ -5,15 +5,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatUSD(amount: number | null | undefined): string {
-  if (amount === null || amount === undefined) return '$0.00'
-  return new Intl.NumberFormat('en-US', {
+export function formatINR(amount: number | null | undefined): string {
+  if (amount === null || amount === undefined || isNaN(amount)) return '₹0.00'
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'INR',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount)
 }
+
+/** Backward-compatible alias for formatINR across existing components */
+export const formatUSD = formatINR
+export const formatCurrency = formatINR
 
 export function formatPercent(rate: number | null | undefined): string {
   if (rate === null || rate === undefined) return '0.0%'
@@ -39,4 +43,3 @@ export function formatDate(dateString: string | null | undefined): string {
     year: 'numeric',
   })
 }
-

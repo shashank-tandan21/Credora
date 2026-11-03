@@ -306,7 +306,7 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
                   className="w-full accent-blue-600 dark:accent-blue-400 cursor-pointer h-2 bg-slate-200 dark:bg-slate-700 rounded-lg"
                 />
                 <div className="flex justify-between text-[11px] text-slate-400 font-mono">
-                  <span>Min: $50.00</span>
+                  <span>Min: {formatUSD(50)}</span>
                   <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
                     Max Eligible{onchain ? ' (on-chain)' : ''}: {formatUSD(eligibleLimit)}
                   </span>

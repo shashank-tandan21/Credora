@@ -29,7 +29,7 @@ class LoanService:
         if request.amount > eligible_limit:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-                detail=f"Requested amount exceeds the eligible limit of {eligible_limit:.2f} MockUSDC.",
+                detail=f"Requested amount exceeds the eligible limit of ₹{eligible_limit:.2f}.",
             )
         if get_settings().demo_mode and request.amount > demo_store.pool_liquidity:
             raise HTTPException(

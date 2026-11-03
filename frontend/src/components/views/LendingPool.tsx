@@ -325,7 +325,7 @@ export const LendingPool: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500">Current Position Value</span>
                   <span className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                    {displayPosition ? formatUSD(displayPosition.current_value) : '$0.00'}
+                    {displayPosition ? formatUSD(displayPosition.current_value) : '₹0.00'}
                   </span>
                 </div>
                 {onchain && chain.loaded ? (
@@ -354,7 +354,7 @@ export const LendingPool: React.FC = () => {
                     <div className="flex justify-between items-center pt-2 border-t border-slate-200 dark:border-slate-700/60">
                       <span className="text-slate-500">Principal Deposited</span>
                       <span className="text-slate-800 dark:text-slate-200">
-                        {displayPosition ? formatUSD(displayPosition.deposited_amount) : '$0.00'}
+                        {displayPosition ? formatUSD(displayPosition.deposited_amount) : '₹0.00'}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -362,7 +362,7 @@ export const LendingPool: React.FC = () => {
                       <span className="text-emerald-600 dark:text-emerald-400 font-bold">
                         {displayPosition
                           ? formatUSD(Math.max(0, displayPosition.current_value - displayPosition.deposited_amount))
-                          : '$0.00'}
+                          : '₹0.00'}
                       </span>
                     </div>
                   </>
@@ -480,12 +480,12 @@ export const LendingPool: React.FC = () => {
       <Modal
         isOpen={isDepositOpen}
         onClose={() => setIsDepositOpen(false)}
-        title="Deposit USDC to Lending Pool"
+        title="Deposit Funds to Lending Pool"
         description="Supply liquidity to the Credora micro-lending pool to earn algorithmic lending yield."
       >
         <form onSubmit={handleDeposit} className="space-y-4">
           <Input
-            label="Deposit Amount (MockUSDC)"
+            label={onchain ? "Deposit Amount (mUSDC / ₹)" : "Deposit Amount (₹)"}
             type="number"
             min="0.000001"
             step="any"
@@ -503,7 +503,7 @@ export const LendingPool: React.FC = () => {
                 onClick={() => setAmountInput(val)}
                 className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-mono transition-colors"
               >
-                +${val}
+                +₹${val}
               </button>
             ))}
           </div>
@@ -551,7 +551,7 @@ export const LendingPool: React.FC = () => {
       >
         <form onSubmit={handleWithdraw} className="space-y-4">
           <Input
-            label="Withdrawal Amount (MockUSDC)"
+            label={onchain ? "Withdrawal Amount (mUSDC / ₹)" : "Withdrawal Amount (₹)"}
             type="number"
             min="0.000001"
             max={onchain && chain.loaded ? fromUsdcUnits(chain.maxWithdraw) : position?.current_value || 0}
