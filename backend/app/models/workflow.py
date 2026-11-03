@@ -12,11 +12,12 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    CheckConstraint,
     func,
 )
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.user import Base
+from app.models.user import Base, User
 
 
 class TransactionStatus(StrEnum):
@@ -73,10 +74,15 @@ class Repayment(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+    borrower: Mapped[User] = relationship(foreign_keys=[borrower_id])
 
     __table_args__ = (
         UniqueConstraint("loan_id", "installment_number", name="uq_repayment_installment"),
         UniqueConstraint("borrower_id", "idempotency_key", name="uq_repayment_idempotency"),
+        CheckConstraint("principal_amount >= 0", name="ck_repayments_principal_nonnegative"),
+        CheckConstraint("interest_amount >= 0", name="ck_repayments_interest_nonnegative"),
+        CheckConstraint("amount > 0", name="ck_repayments_amount_positive"),
+        CheckConstraint("installment_number > 0", name="ck_repayments_installment_positive"),
     )
 
 
@@ -99,6 +105,14 @@ class RecoveryRequest(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+    borrower: Mapped[User] = relationship(foreign_keys=[borrower_id])
+    milestones: Mapped[list["RecoveryMilestone"]] = relationship(
+        cascade="all, delete-orphan", order_by="RecoveryMilestone.due_at"
+    )
+
+    __table_args__ = (
+        CheckConstraint("proposed_total > 0", name="ck_recovery_total_positive"),
+    )
 
 
 class RecoveryMilestone(Base):
@@ -114,6 +128,10 @@ class RecoveryMilestone(Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
+    )
+
+    __table_args__ = (
+        CheckConstraint("amount > 0", name="ck_recovery_milestone_amount_positive"),
     )
 
 
@@ -136,6 +154,8 @@ class Dispute(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
+    borrower: Mapped[User] = relationship(foreign_keys=[borrower_id])
+    resolver: Mapped[User | None] = relationship(foreign_keys=[resolved_by])
 
     __table_args__ = (
         Index("ix_disputes_borrower_status", "borrower_id", "status"),

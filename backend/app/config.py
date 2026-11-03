@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     chain_rpc_timeout_seconds: float = Field(default=10.0, gt=0, le=60)
     jwt_secret: str = Field(default="development-only-secret", min_length=16)
     auth_nonce_expiry_seconds: int = 600
+    auth_domain: str = "localhost"
+    auth_uri: str = "http://localhost:3000"
 
     mock_usdc_address: str = ""
     identity_registry_address: str = ""

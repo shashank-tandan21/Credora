@@ -47,14 +47,47 @@ forward-fix migration after a backup.
 - `POST /api/v1/loans/quote`
 - `POST /api/v1/loans`
 - `GET /api/v1/loans`
+- `POST /api/v1/loans/{id}/repayments/quote`
+- `POST /api/v1/loans/{id}/repayments/prepare`
+- `GET /api/v1/loans/{id}/repayments`
+- `POST /api/v1/repayments/{id}/sync`
 - `GET /api/v1/pool/statistics`
+- `GET /api/v1/pool/me`
+- `POST /api/v1/pool/deposit`
+- `POST /api/v1/pool/withdraw`
+- `POST /api/v1/pool/transactions/{id}/sync`
+- `POST /api/v1/recovery/requests`
+- `GET /api/v1/recovery/requests`
+- `POST /api/v1/recovery/requests/{id}/milestones`
+- `POST /api/v1/recovery/milestones/{id}/complete`
+- `GET /api/v1/recovery/requests/{id}/progress`
+- `POST /api/v1/disputes`
+- `GET /api/v1/disputes`
+- `GET /api/v1/reviewer/disputes`
+- `POST /api/v1/reviewer/disputes/{id}/resolve`
 - `GET /api/v1/chain/config`
 - `POST /api/v1/borrowers/me/identity/sync`
 
 Demo wallet verification accepts a signature in the form `demo:<nonce>`. This is
-only a local development mechanism; it is not Ethereum signature verification.
-Production authentication must use a wallet signature verifier before `DEMO_MODE`
-is disabled.
+only a local development mechanism. With `DEMO_MODE=false`, the backend issues
+an EIP-4361-shaped challenge containing domain, URI, chain ID, nonce, issued-at,
+and expiration fields, recovers the signer address from the EIP-191 message
+signature, and consumes the nonce after successful verification.
+
+Repayment preparation is idempotent by borrower and idempotency key. A repayment
+does not change loan state until its sync endpoint receives a successful receipt
+status and transaction hash. Recovery requests require an overdue loan, cannot
+underpay the outstanding schedule, and expose deterministic milestone progress.
+Disputes are restricted to the assessment owner's wallet; reviewer routes enforce
+the authenticated server-side role and record resolution fields.
+Lender deposits and withdrawals are idempotent, remain prepared until a
+transaction hash is confirmed, and update the persisted lender position only
+after confirmation.
+
+The credit, borrower, loan, authentication, and pool services select the
+repository implementation from `DEMO_MODE`. Demo mode uses the in-memory
+repository; production mode uses the async PostgreSQL repository and the
+`20261103_0002` migration adds persisted assessment components and loan schedules.
 
 ## Blockchain configuration
 

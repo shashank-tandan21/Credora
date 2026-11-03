@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { useConnection } from 'wagmi'
+import { useConnection, useSignMessage } from 'wagmi'
 import { api } from '../api/client'
 import { defaultDemoMode } from '../web3/config'
 import type { BorrowerProfile, NetworkMode, TransactionStatus, UserRole } from '../types'
@@ -33,6 +33,7 @@ function initialNetworkMode(): NetworkMode {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const connection = useConnection()
+  const { signMessageAsync } = useSignMessage()
 
   const [walletAddress, setWalletAddress] = useState<string>(() => {
     return localStorage.getItem('credora-wallet') || DEFAULT_DEMO_WALLET
@@ -75,6 +76,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsDemoConnected(true)
     localStorage.setItem('credora-wallet', target)
     api.setWallet(target)
+    if (networkMode === 'onchain' && connection.isConnected && connection.address) {
+      const challenge = await api.requestNonce(target)
+      const signature = await signMessageAsync({ message: challenge.message })
+      await api.verifySignature(target, challenge.nonce, signature, challenge.message)
+    }
     await refreshProfile()
   }
 

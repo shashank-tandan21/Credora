@@ -91,6 +91,10 @@ transaction panel (bottom right):
 
 `src/web3/generated/` is produced by `npm run export` in `contracts/`; do not edit it by hand.
 
+When on-chain mode is connected, the frontend signs the backend's returned
+authentication challenge with the connected wallet. Demo Mode continues to use
+the local `demo:<nonce>` mechanism and never requests a wallet signature.
+
 ## Running against a local chain
 
 ```powershell

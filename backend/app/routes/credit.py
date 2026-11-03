@@ -17,26 +17,26 @@ router = APIRouter(prefix="/credit")
 async def submit_evidence(
     request: EvidenceSubmissionRequest, current_user: CurrentUser
 ) -> EvidenceResponse:
-    return credit_service.add_evidence(current_user, request)
+    return await credit_service.add_evidence(current_user, request)
 
 
 @router.get("/evidence", response_model=list[EvidenceResponse])
 async def list_evidence(current_user: CurrentUser) -> list[EvidenceResponse]:
-    return credit_service.list_evidence(current_user)
+    return await credit_service.list_evidence(current_user)
 
 
 @router.post("/assess", response_model=CreditAssessmentResponse)
 async def create_assessment(
     request: CreditAssessmentRequest, current_user: CurrentUser
 ) -> CreditAssessmentResponse:
-    return credit_service.assess(current_user, request)
+    return await credit_service.assess(current_user, request)
 
 
 @router.get("/current", response_model=CreditAssessmentResponse)
 async def get_current_assessment(current_user: CurrentUser) -> CreditAssessmentResponse:
-    return credit_service.current(current_user)
+    return await credit_service.current(current_user)
 
 
 @router.get("/history", response_model=list[CreditAssessmentResponse])
 async def get_assessment_history(current_user: CurrentUser) -> list[CreditAssessmentResponse]:
-    return credit_service.history(current_user)
+    return await credit_service.history(current_user)

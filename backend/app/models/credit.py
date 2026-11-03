@@ -33,6 +33,7 @@ class CreditAssessment(Base):
     score: Mapped[float] = mapped_column(Float)
     risk_category: Mapped[str] = mapped_column(String(30))
     explanation: Mapped[str] = mapped_column(Text)
+    components: Mapped[str] = mapped_column(Text, default="[]")
     status: Mapped[str] = mapped_column(String(20), default="active")
     valid_from: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
