@@ -38,11 +38,11 @@ export const WalletControl: React.FC = () => {
     return (
       <div
         title="Simulated demo wallet. No blockchain connection is used in Demo Mode."
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs font-mono"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-line dark:border-line bg-surface dark:bg-surface text-xs font-mono"
       >
         <Wallet className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
-        <span className="hidden sm:inline text-slate-700 dark:text-slate-300">{truncateAddress(walletAddress)}</span>
-        <span className="hidden sm:inline text-[10px] font-sans font-semibold uppercase text-amber-600 dark:text-amber-400">Demo</span>
+        <span className="hidden sm:inline text-foreground dark:text-foreground">{truncateAddress(walletAddress)}</span>
+        <span className="hidden sm:inline text-xs font-sans font-semibold uppercase text-amber-600 dark:text-amber-400">Demo</span>
       </div>
     )
   }
@@ -66,7 +66,7 @@ export const WalletControl: React.FC = () => {
           href="https://metamask.io/download/"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-line dark:border-line text-xs font-medium text-foreground dark:text-foreground hover:bg-surface dark:hover:bg-subtle"
         >
           <PlugZap className="w-3.5 h-3.5" aria-hidden="true" />
           <span className="hidden sm:inline">Install a wallet</span>
@@ -113,14 +113,14 @@ export const WalletControl: React.FC = () => {
         className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/60 dark:bg-emerald-950/30 text-xs font-mono"
       >
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
-        <span className="text-slate-700 dark:text-slate-200">{truncateAddress(status.address)}</span>
+        <span className="text-foreground dark:text-foreground">{truncateAddress(status.address)}</span>
       </div>
       <button
         type="button"
         onClick={() => disconnect.mutate()}
         aria-label="Disconnect wallet"
         title={`Disconnect ${status.address}`}
-        className="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 transition-colors cursor-pointer"
+        className="relative p-2 rounded-lg text-muted hover:bg-surface hover:text-foreground dark:text-foreground dark:hover:bg-subtle dark:hover:text-muted transition-colors cursor-pointer"
       >
         <LogOut className="w-4 h-4" />
         <span className="sm:hidden absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
@@ -152,7 +152,7 @@ export const OnChainNotice: React.FC<{ action: string }> = ({ action }) => {
 
   if (!status.isConnected) {
     return (
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border text-xs bg-blue-50 border-blue-200 text-blue-900 dark:bg-blue-950/40 dark:border-blue-800/60 dark:text-blue-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border text-xs bg-brand-soft border-line text-accent dark:bg-brand-soft dark:border-line dark:text-accent">
         <span>Connect a wallet on {networkLabel} to {action}.</span>
         {hasInjectedWallet() ? (
           <Button size="sm" onClick={actions.connect} isLoading={actions.isConnecting}>

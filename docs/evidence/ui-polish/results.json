@@ -1,0 +1,159 @@
+{
+  "results": [
+    {
+      "width": 1440,
+      "route": "/",
+      "overflow": false,
+      "text": 1367,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 1440,
+      "route": "/borrower",
+      "overflow": false,
+      "text": 979,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 1440,
+      "route": "/borrower/credit",
+      "overflow": false,
+      "text": 1340,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 1440,
+      "route": "/borrower/borrow",
+      "overflow": false,
+      "text": 1053,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 1440,
+      "route": "/lender",
+      "overflow": false,
+      "text": 919,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 1440,
+      "route": "/reviewer",
+      "overflow": false,
+      "text": 437,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 768,
+      "route": "/",
+      "overflow": false,
+      "text": 1367,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 768,
+      "route": "/borrower",
+      "overflow": false,
+      "text": 979,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 768,
+      "route": "/borrower/credit",
+      "overflow": false,
+      "text": 1340,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 768,
+      "route": "/borrower/borrow",
+      "overflow": false,
+      "text": 1053,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 768,
+      "route": "/lender",
+      "overflow": false,
+      "text": 919,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 768,
+      "route": "/reviewer",
+      "overflow": false,
+      "text": 437,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 390,
+      "route": "/",
+      "overflow": false,
+      "text": 1367,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 390,
+      "route": "/borrower",
+      "overflow": false,
+      "text": 979,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 390,
+      "route": "/borrower/credit",
+      "overflow": false,
+      "text": 1340,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 390,
+      "route": "/borrower/borrow",
+      "overflow": false,
+      "text": 1053,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 390,
+      "route": "/lender",
+      "overflow": false,
+      "text": 919,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    },
+    {
+      "width": 390,
+      "route": "/reviewer",
+      "overflow": false,
+      "text": 437,
+      "font": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "loadedFont": true
+    }
+  ],
+  "errors": [],
+  "interactions": [
+    "dialog focus trap",
+    "Escape and focus return",
+    "dark theme",
+    "workspace selection",
+    "deep-link reload",
+    "mode isolation",
+    "quoted APR",
+    "stale quote invalidation"
+  ]
+}

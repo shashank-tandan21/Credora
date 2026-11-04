@@ -65,6 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const setNetworkMode = (mode: NetworkMode) => {
+    api.setNetworkMode(mode)
     setNetworkModeState(mode)
     setActiveTx(null)
     localStorage.setItem('credora-network', mode)

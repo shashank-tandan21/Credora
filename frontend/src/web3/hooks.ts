@@ -62,6 +62,7 @@ export function usePoolChainData() {
     totalShares,
     shares,
     positionValue,
+    positionLoaded: !!address && [1, 2, 3].every(index => query.data?.[index]?.status === 'success'),
     maxWithdraw: query.data?.[2]?.result ?? 0n,
     walletBalance: query.data?.[3]?.result ?? 0n,
     loansOriginated: (query.data?.[4]?.result ?? 1n) - 1n,
@@ -99,7 +100,8 @@ export function useBorrowerChainState() {
   const eligibility = base.data?.[1]?.result
   return {
     loaded: base.data !== undefined,
-    isLoading: base.isLoading,
+    isLoading: base.isLoading || (loanId > 0n && loan.isLoading),
+    error: base.error || loan.error || base.data?.some(result => result.status === 'failure') || loan.data?.some(result => result.status === 'failure'),
     registered: base.data?.[0]?.result ?? false,
     eligibleLimit: eligibility?.[0] ?? 0n,
     scoreBps: eligibility?.[1] ?? 0,
@@ -129,6 +131,9 @@ export function useOperatorRoles() {
     query: { enabled: canRead && address !== undefined },
   })
   return {
+    loaded: query.data?.every(result => result.status === 'success') ?? false,
+    isLoading: query.isLoading,
+    error: query.error || query.data?.some(result => result.status === 'failure'),
     attester: query.data?.[0]?.result ?? false,
     funder: query.data?.[1]?.result ?? false,
     reviewer: query.data?.[2]?.result ?? false,

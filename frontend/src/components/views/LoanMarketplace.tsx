@@ -9,7 +9,8 @@ import { parseEventLogs } from 'viem'
 import { useReadContract } from 'wagmi'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../common/Card'
 import { Button } from '../common/Button'
-import { Badge } from '../common/Badge'
+import { Input } from '../common/Input'
+import { isCurrentQuote } from '../../utils/quote'
 import { Modal } from '../common/Modal'
 import { OnChainNotice } from '../web3/WalletControl'
 import { api } from '../../api/client'
@@ -39,7 +40,7 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
   onLoanCreated,
   onNavigate,
 }) => {
-  const { networkMode } = useAuth()
+  const { networkMode, profile } = useAuth()
   const onchain = networkMode === 'onchain'
   const chainStatus = useOnChainStatus()
   const chainBorrower = useBorrowerChainState()
@@ -56,6 +57,7 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
   const [amount, setAmount] = useState(Math.min(500, eligibleLimit || 500))
   const [durationDays, setDurationDays] = useState(90)
   const [backendQuote, setBackendQuote] = useState<LoanQuote | null>(null)
+  const [quoteAssessmentId, setQuoteAssessmentId] = useState<string | null>(null)
   const [isLoadingQuote, setIsLoadingQuote] = useState(false)
   const [isSubmittingLoan, setIsSubmittingLoan] = useState(false)
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
@@ -74,22 +76,23 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
   })
 
   useEffect(() => {
-    if (eligibleLimit > 0 && amount > eligibleLimit) {
-      setAmount(eligibleLimit)
-    }
+    if (eligibleLimit > 0) setAmount(current => Math.min(current, eligibleLimit))
   }, [eligibleLimit])
 
   // Demo / backend quote: recalculated whenever amount or duration changes.
   useEffect(() => {
     if (onchain) return
+    setBackendQuote(null)
+    setIsLoadingQuote(false)
     let isCancelled = false
     const fetchQuote = async () => {
-      if (amount <= 0 || !currentAssessment) return
+      if (!Number.isFinite(amount) || amount < 50 || amount > eligibleLimit || !currentAssessment) return
       setIsLoadingQuote(true)
       try {
         const q = await api.getLoanQuote(amount, durationDays)
         if (!isCancelled) {
           setBackendQuote(q)
+          setQuoteAssessmentId(currentAssessment.id)
           setErrorMessage(null)
         }
       } catch (err: unknown) {
@@ -107,7 +110,7 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
       isCancelled = true
       clearTimeout(timer)
     }
-  }, [amount, durationDays, currentAssessment, onchain])
+  }, [amount, durationDays, currentAssessment, onchain, eligibleLimit])
 
   // On-chain quote: exact smallest-unit amounts from LoanManager.quote. Due dates are
   // estimates; the real schedule starts when the loan is funded.
@@ -117,7 +120,7 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
     return {
       amount,
       eligible_limit: eligibleLimit,
-      interest_rate: 12,
+      interest_rate: amount > 0 ? fromUsdcUnits(interest) / amount * 365 / durationDays : 0,
       interest_amount: fromUsdcUnits(interest),
       total_repayment: fromUsdcUnits(totalDue),
       duration_days: durationDays,
@@ -129,9 +132,13 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
       })),
     }
   })()
-  const quote = onchain ? onChainQuote : backendQuote
+  const candidateQuote = onchain ? onChainQuote : quoteAssessmentId === currentAssessment?.id ? backendQuote : null
+  const quote = isCurrentQuote(candidateQuote, amount, durationDays, eligibleLimit) ? candidateQuote : null
+  const canSubmit = !!quote && !isSubmittingLoan && !isRunning && (onchain ? chainStatus.canTransact && !chainQuote.isFetching && !chainQuote.isError : !!profile && !isLoadingQuote)
+
 
   const handleApplyLoan = async () => {
+    if (!canSubmit) return
     if (onchain) {
       if (principalUnits === 0n) return
       const result = await run('Request on-chain loan', steps.requestLoan(principalUnits, durationDays))
@@ -162,7 +169,7 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
   // open loan (which would otherwise route to the gate below after the refetch).
   if (onchain && success?.kind === 'onchain') {
     return (
-      <div role="status" className="max-w-xl mx-auto my-12 p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-200 flex items-start gap-3">
+      <div role="status" className="max-w-xl mx-auto my-12 p-6 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-200 flex items-start gap-3">
         <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
         <div className="space-y-1">
           <h4 className="text-sm font-semibold">
@@ -170,7 +177,7 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
               ? `Loan #${success.loanId?.toString() ?? ''} funded and disbursed on ${networkLabel}`
               : `Loan #${success.loanId?.toString() ?? ''} requested on ${networkLabel}`}
           </h4>
-          <p className="text-xs">
+          <p className="text-sm">
             {success.funded
               ? `${formatUsdcExact(success.principal)} was transferred to your wallet by the LendingPool. The schedule starts now.`
               : 'The pool lacked idle liquidity, so the request is queued for a funder. It is not disbursed yet.'}
@@ -185,7 +192,10 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
     )
   }
 
-  if (onchain && (!chainStatus.canRead || !chainBorrower.registered || !chainBorrower.scoreValid || chainBorrower.loan)) {
+  if (onchain && chainStatus.canTransact && chainBorrower.isLoading) return <p role="status" className="text-muted">Checking borrowing eligibility…</p>
+  if (!onchain && !profile) return <div className="inline-notice"><p>Create your profile before requesting a loan.</p><Button onClick={() => onNavigate('borrower')}>Create profile</Button></div>
+
+  if (onchain && (!chainStatus.canTransact || !chainBorrower.registered || !chainBorrower.scoreValid || chainBorrower.loan)) {
     const openLoan = chainBorrower.loan
     return (
       <Card className="max-w-xl mx-auto my-12 text-center p-8 space-y-4">
@@ -201,8 +211,8 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
             : openLoan
               ? 'LoanManager allows one open loan per borrower. Repay or cancel it before requesting another.'
               : !chainBorrower.registered
-                ? 'Register your identity in the IdentityRegistry from My Facilities first.'
-                : 'A reviewer with the attester role must publish your current score in the CreditScoreRegistry (Reviewer Desk → On-chain Operations).'}
+                ? 'Complete your profile registration from Overview first.'
+                : 'An authorized operator must approve your current assessment before you can borrow on-chain.'}
         </CardDescription>
         <OnChainNotice action="request an on-chain loan" />
         <div>
@@ -220,7 +230,7 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
         </div>
         <CardTitle className="text-lg">Credit Assessment Required</CardTitle>
         <CardDescription className="max-w-md mx-auto mt-2">
-          Under the Credora academic protocol, micro-loans require an active 5-factor credit
+          Micro-loans require an active five-factor credit
           assessment to establish your borrowing limit.
         </CardDescription>
         <div className="pt-6">
@@ -230,15 +240,16 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
     )
   }
 
+  if (eligibleLimit < 50) return <div className="inline-notice"><p>Your current eligible amount is below the minimum loan amount.</p><Button onClick={() => onNavigate('credit')}>Review assessment</Button></div>
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="pb-2 border-b border-slate-200/80 dark:border-slate-800">
-        <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-          <Coins className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-          Loan Marketplace & Quotation Engine
+      <div className="pb-2 border-b border-line dark:border-line">
+        <h2 className="text-xl font-semibold tracking-tight text-foreground dark:text-foreground flex items-center gap-2">
+          <Coins className="w-5 h-5 text-accent dark:text-accent" />
+          Review your loan terms
         </h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+        <p className="text-sm text-muted dark:text-muted mt-0.5">
           {onchain
             ? `Loans are requested from your wallet and disbursed by the LendingPool on ${networkLabel}`
             : 'Demo Mode: requests are simulated; nothing is disbursed on-chain'}
@@ -253,7 +264,7 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
           <CheckCircle2 className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="space-y-1">
             <h4 className="text-sm font-semibold">Demo loan request recorded</h4>
-            <p className="text-xs">
+            <p className="text-sm">
               Simulated facility of {formatUSD(success.loan.amount)} for {success.loan.duration_days} days. Installment
               #1 would be due {formatDate(success.loan.installments[0]?.due_date)}. No funds moved and no blockchain
               transaction was sent.
@@ -274,40 +285,40 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base">Loan Parameters</CardTitle>
+                  <CardTitle className="text-base">Loan details</CardTitle>
                   <CardDescription>
                     Configure desired principal and repayment tenure
                   </CardDescription>
                 </div>
-                <Badge variant="indigo" size="sm">
-                  12.0% Fixed APR
-                </Badge>
+
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Amount Slider */}
               <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs">
-                  <label htmlFor="loan-amount" className="font-semibold text-slate-700 dark:text-slate-300">
+                <div className="flex justify-between items-center text-sm">
+                  <label htmlFor="loan-amount" className="font-semibold text-foreground dark:text-foreground">
                     Requested Principal
                   </label>
-                  <span className="font-mono text-base font-bold text-blue-600 dark:text-blue-400">
+                  <span className="tabular-nums text-base font-semibold text-accent dark:text-accent">
                     {formatUSD(amount)}
                   </span>
                 </div>
+                <Input id="loan-amount" aria-label="Requested amount in mUSDC" type="number" min={50} max={eligibleLimit} step="0.000001" value={amount || ''} onChange={e => setAmount(Number(e.target.value))} helperText="Amount in test mUSDC. Review the updated quote before confirming." />
                 <input
-                  id="loan-amount"
+                  aria-label="Adjust requested amount"
+                  id="loan-amount-slider"
                   type="range"
                   min="50"
                   max={eligibleLimit}
                   step="25"
                   value={amount}
                   onChange={(e) => setAmount(Number(e.target.value))}
-                  className="w-full accent-blue-600 dark:accent-blue-400 cursor-pointer h-2 bg-slate-200 dark:bg-slate-700 rounded-lg"
+                  className="w-full accent-brand cursor-pointer h-2 bg-subtle dark:bg-subtle rounded-lg"
                 />
-                <div className="flex justify-between text-[11px] text-slate-400 font-mono">
+                <div className="flex justify-between text-sm text-muted tabular-nums">
                   <span>Min: {formatUSD(50)}</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                  <span className="text-foreground font-semibold">
                     Max Eligible{onchain ? ' (on-chain)' : ''}: {formatUSD(eligibleLimit)}
                   </span>
                 </div>
@@ -315,11 +326,11 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
 
               {/* Duration Slider */}
               <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs">
-                  <label htmlFor="loan-duration" className="font-semibold text-slate-700 dark:text-slate-300">
+                <div className="flex justify-between items-center text-sm">
+                  <label htmlFor="loan-duration" className="font-semibold text-foreground dark:text-foreground">
                     Repayment Duration
                   </label>
-                  <span className="font-mono text-base font-bold text-slate-900 dark:text-slate-100">
+                  <span className="tabular-nums text-base font-semibold text-foreground dark:text-foreground">
                     {durationDays} Days ({Math.floor((durationDays + 29) / 30)} monthly installments)
                   </span>
                 </div>
@@ -328,26 +339,26 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
                   type="range"
                   min="30"
                   max="365"
-                  step="30"
+                  step="1"
                   value={durationDays}
                   onChange={(e) => setDurationDays(Number(e.target.value))}
-                  className="w-full accent-blue-600 dark:accent-blue-400 cursor-pointer h-2 bg-slate-200 dark:bg-slate-700 rounded-lg"
+                  className="w-full accent-brand cursor-pointer h-2 bg-subtle dark:bg-subtle rounded-lg"
                 />
-                <div className="flex justify-between text-[11px] text-slate-400 font-mono">
-                  <span>30 Days (1 mo)</span>
-                  <span>180 Days (6 mos)</span>
-                  <span>365 Days (1 yr)</span>
+                <div className="flex justify-between text-sm text-muted tabular-nums">
+                  <span>30 days</span>
+                  <span>180 days</span>
+                  <span>365 days</span>
                 </div>
               </div>
 
               {/* Protocol Terms Disclosure */}
-              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 text-xs space-y-2 text-slate-600 dark:text-slate-400">
-                <div className="flex items-center gap-2 text-slate-900 dark:text-slate-200 font-medium">
-                  <FileCheck className="w-4 h-4 text-blue-500" />
+              <div className="p-3.5 rounded-xl bg-surface dark:bg-subtle border border-line dark:border-line text-sm space-y-2 text-muted dark:text-muted">
+                <div className="flex items-center gap-2 text-foreground dark:text-foreground font-medium">
+                  <FileCheck className="w-4 h-4 text-accent" />
                   <span>Transparent Financial Conventions</span>
                 </div>
-                <p className="text-[11px] leading-relaxed">
-                  • Interest is computed on exact 365-day basis points (1200 bps).
+                <p className="text-sm leading-relaxed">
+                  • The quote shows your interest and full repayment amount.
                   <br />• Final installment absorbs rounding difference so schedule totals equal
                   the exact repayment obligation.
                   <br />• Zero origination fees or prepayment penalties.
@@ -368,9 +379,9 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Quotation Breakdown</CardTitle>
+                <CardTitle className="text-base">Loan summary</CardTitle>
                 {(isLoadingQuote || chainQuote.isFetching) && (
-                  <span className="text-[10px] text-blue-500 font-medium animate-pulse">
+                  <span className="text-sm text-accent font-medium animate-pulse">
                     Updating...
                   </span>
                 )}
@@ -382,30 +393,30 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
             <CardContent className="space-y-4">
               {quote ? (
                 <>
-                  <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                  <div className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
                     <div className="flex justify-between py-2.5">
-                      <span className="text-slate-500">Principal Disbursed</span>
-                      <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                      <span className="text-muted">Requested amount</span>
+                      <span className="tabular-nums font-semibold text-foreground dark:text-foreground">
                         {formatUSD(quote.amount)}
                       </span>
                     </div>
                     <div className="flex justify-between py-2.5">
-                      <span className="text-slate-500">Annual Interest Rate</span>
-                      <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">
-                        12.00% APR
+                      <span className="text-muted">Annual Interest Rate</span>
+                      <span className="tabular-nums font-semibold text-foreground">
+                        {(quote.interest_rate * 100).toFixed(2)}% APR
                       </span>
                     </div>
                     <div className="flex justify-between py-2.5">
-                      <span className="text-slate-500">Total Accrued Interest</span>
-                      <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                      <span className="text-muted">Total Accrued Interest</span>
+                      <span className="tabular-nums font-semibold text-foreground dark:text-foreground">
                         {onchain && chainQuote.data ? formatUsdcExact(chainQuote.data[0]) : formatUSD(quote.interest_amount)}
                       </span>
                     </div>
                     <div className="flex justify-between py-2.5 text-sm">
-                      <span className="font-semibold text-slate-900 dark:text-slate-100">
+                      <span className="font-semibold text-foreground dark:text-foreground">
                         Total Repayment
                       </span>
-                      <span className="font-mono font-bold text-blue-600 dark:text-blue-400">
+                      <span className="tabular-nums font-semibold text-accent dark:text-accent">
                         {onchain && chainQuote.data ? formatUsdcExact(chainQuote.data[1]) : formatUSD(quote.total_repayment)}
                       </span>
                     </div>
@@ -413,19 +424,19 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
 
                   {/* Installment Schedule Preview */}
                   <div>
-                    <h5 className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                    <h5 className="text-sm font-semibold text-muted dark:text-muted uppercase tracking-wider mb-2">
                       Installment Schedule ({quote.installments.length} Payments)
                     </h5>
-                    <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1 text-xs font-mono">
+                    <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1 text-sm tabular-nums">
                       {quote.installments.map((inst) => (
                         <div
                           key={inst.installment_number}
-                          className="flex justify-between items-center p-2 rounded bg-slate-50 dark:bg-slate-800/60"
+                          className="flex justify-between items-center p-2 rounded bg-surface dark:bg-subtle"
                         >
-                          <span className="text-slate-600 dark:text-slate-400">
+                          <span className="text-muted dark:text-muted">
                             #{inst.installment_number} Due {formatDate(inst.due_date)}
                           </span>
-                          <span className="font-bold text-slate-900 dark:text-slate-100">
+                          <span className="font-semibold text-foreground dark:text-foreground">
                             {formatUSD(inst.amount)}
                           </span>
                         </div>
@@ -437,7 +448,7 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
                     <Button
                       className="w-full"
                       size="lg"
-                      disabled={onchain && !chainStatus.canTransact}
+                      disabled={!canSubmit}
                       onClick={() => setIsConfirmModalOpen(true)}
                     >
                       {onchain ? 'Request Loan On-chain' : 'Simulate Loan Request'}
@@ -445,8 +456,8 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
                   </div>
                 </>
               ) : (
-                <div className="py-8 text-center text-xs text-slate-400">
-                  {errorMessage || 'Calculating live quotation...'}
+                <div className="py-8 text-center text-sm text-muted">
+                  {errorMessage || (amount < 50 || amount > eligibleLimit ? 'Enter an amount within your borrowing limit.' : chainQuote.isError ? 'The quote is unavailable. Check your connection and try again.' : 'Calculating your quote…')}
                 </div>
               )}
             </CardContent>
@@ -466,20 +477,20 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
         }
       >
         <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 space-y-2 text-xs font-mono">
+          <div className="p-4 rounded-xl bg-surface dark:bg-subtle border border-line dark:border-line space-y-2 text-sm tabular-nums">
             <div className="flex justify-between">
-              <span className="text-slate-500">Principal:</span>
-              <span className="font-bold text-slate-900 dark:text-slate-100">
+              <span className="text-muted">Principal:</span>
+              <span className="font-semibold text-foreground dark:text-foreground">
                 {onchain ? formatUsdcExact(principalUnits) : formatUSD(amount)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">Duration:</span>
-              <span className="text-slate-800 dark:text-slate-200">{durationDays} Days</span>
+              <span className="text-muted">Duration:</span>
+              <span className="text-foreground dark:text-foreground">{durationDays} Days</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">Total Obligation:</span>
-              <span className="font-bold text-blue-600 dark:text-blue-400">
+              <span className="text-muted">Total Obligation:</span>
+              <span className="font-semibold text-accent dark:text-accent">
                 {onchain && chainQuote.data
                   ? formatUsdcExact(chainQuote.data[1])
                   : quote
@@ -489,7 +500,7 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
             </div>
           </div>
 
-          <p className="text-[11px] text-slate-500 leading-relaxed">
+          <p className="text-sm text-muted leading-relaxed">
             {onchain
               ? 'If the pool has enough idle liquidity the loan is funded and disbursed in the same transaction; otherwise it is queued for a funder. Success is shown only after the transaction is confirmed.'
               : 'By confirming you create a simulated request. No wallet, contract, or funds are involved.'}
@@ -504,7 +515,7 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
             >
               Cancel
             </Button>
-            <Button size="sm" onClick={handleApplyLoan} isLoading={isSubmittingLoan || isRunning}>
+            <Button size="sm" disabled={!canSubmit} onClick={handleApplyLoan} isLoading={isSubmittingLoan || isRunning}>
               {onchain ? 'Confirm in Wallet' : 'Confirm Simulation'}
             </Button>
           </div>

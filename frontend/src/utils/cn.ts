@@ -5,19 +5,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatINR(amount: number | null | undefined): string {
-  if (amount === null || amount === undefined || isNaN(amount)) return '₹0.00'
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount)
+/** Test-token display only; settlement uses exact bigint units. */
+export function formatTokenAmount(amount: number | null | undefined): string {
+  if (amount == null || !Number.isFinite(amount)) return '—'
+  return new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount) + ' mUSDC'
 }
-
-/** Backward-compatible alias for formatINR across existing components */
-export const formatUSD = formatINR
-export const formatCurrency = formatINR
+export const formatINR = formatTokenAmount
+export const formatUSD = formatTokenAmount
+export const formatCurrency = formatTokenAmount
 
 export function formatPercent(rate: number | null | undefined): string {
   if (rate === null || rate === undefined) return '0.0%'
