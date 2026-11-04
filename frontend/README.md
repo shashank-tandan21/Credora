@@ -39,7 +39,9 @@ Visit [http://localhost:3000](http://localhost:3000).
 
 ## Demo Mode and on-chain mode
 
-The header pill switches modes. Demo Mode is the default (`VITE_DEMO_MODE=true`).
+The header pill switches modes. Hardhat Local on-chain mode is the default
+(`VITE_CHAIN_ID=31337`, `VITE_DEMO_MODE=false`) so wallet transactions use local ETH
+for gas. Set `VITE_DEMO_MODE=true` to use simulated data without a wallet.
 
 | Mode | Data and actions | Wallet |
 |---|---|---|
@@ -82,9 +84,10 @@ transaction panel (bottom right):
 | Variable | Required | Description |
 |---|---|---|
 | `VITE_API_URL` | No (default `http://127.0.0.1:8000`) | Backend URL for the dev-server `/api` proxy |
-| `VITE_CHAIN_ID` | No (default `11155111`) | `11155111` Sepolia or `31337` local Hardhat |
-| `VITE_DEMO_MODE` | No (default `true`) | `false` starts in on-chain mode |
+| `VITE_CHAIN_ID` | No (default `31337`) | `31337` local Hardhat or `11155111` Sepolia |
+| `VITE_DEMO_MODE` | No (default `false`) | `true` starts in Demo Mode; `false` starts on-chain |
 | `VITE_RPC_URL` | No | Read RPC; bundled into the browser, so use a public or domain-restricted endpoint |
+| `VITE_ETH_USD_FEED_ADDRESS` | Sepolia: no (defaults to the Sepolia ETH/USD feed) | Chainlink AggregatorV3-compatible ETH/USD feed; local deployments generate a mock feed address |
 | `VITE_CONFIRMATIONS` | No (2 Sepolia, 1 local) | Confirmation depth before success |
 | `VITE_TX_TIMEOUT_MS` | No (default `180000`) | Receipt wait before reporting a timeout |
 | `VITE_*_ADDRESS` (7) | Sepolia: yes | Contract addresses. On chain 31337 they default to the deterministic local deployment in `src/web3/generated/localDeployment.ts`; Sepolia never falls back. |

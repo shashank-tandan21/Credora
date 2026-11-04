@@ -3,12 +3,15 @@
 export const localDeployment = {
   "chainId": 31337,
   "contracts": {
-    "mockUsdc": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-    "identityRegistry": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-    "creditScoreRegistry": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-    "lendingPool": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-    "loanManager": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
-    "recoveryManager": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-    "disputeManager": "0x0165878A594ca255338adfa4d48449f69242Eb8F"
+    "mockUsdc": "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
+    "identityRegistry": "0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f",
+    "creditScoreRegistry": "0x4A679253410272dd5232B3Ff7cF5dbB88f295319",
+    "lendingPool": "0x7a2088a1bFc9d81c55368AE168C2C02570cB814F",
+    "loanManager": "0x09635F643e140090A9A8Dcd712eD6285858ceBef",
+    "recoveryManager": "0xc5a5C42992dECbae36851359345FE25997F5C42d",
+    "disputeManager": "0x67d269191c92Caf3cD7723F116c85e6E9bf55933"
+  },
+  "oracle": {
+    "ethUsdFeed": "0x95401dc811bb5740090279Ba06cfA8fcF6113778"
   }
 } as const;

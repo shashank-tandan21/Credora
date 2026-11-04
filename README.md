@@ -150,6 +150,10 @@ Each package has its own detailed README:
 
 No blockchain, wallet, or database required. Needs **Python 3.11+** and **Node.js 22.12+**.
 
+For this no-blockchain quick start, create `frontend/.env.local` with
+`VITE_DEMO_MODE=true`. Without that setting, the frontend defaults to Hardhat Local
+on-chain mode so wallet transactions use local ETH for gas.
+
 ```powershell
 # Terminal 1: API on http://127.0.0.1:8000
 cd backend
@@ -162,6 +166,7 @@ uvicorn app.main:app --reload
 # Terminal 2: app on http://localhost:3000
 cd frontend
 npm install
+# Create .env.local with VITE_DEMO_MODE=true before starting Demo Mode.
 npm run dev
 ```
 
@@ -196,8 +201,9 @@ VITE_CHAIN_ID=31337
 VITE_DEMO_MODE=false
 ```
 
-Contract addresses default to the deterministic local deployment, so nothing else is
-needed. Run `npm run dev`.
+Contract addresses default to the deterministic local deployment, and
+`npm run deploy:local` also deploys a Chainlink-compatible local ETH/USD mock feed.
+Run `npm run export` after deployment, then start the frontend with `npm run dev`.
 
 **Wallet.** In MetaMask, add network `http://127.0.0.1:8545` with chain id `31337`, and
 import a few accounts printed by `npm run node`. Account #0 holds every operator role

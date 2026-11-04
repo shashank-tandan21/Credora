@@ -3,12 +3,14 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import { networkLabel } from '../../web3/config'
 import { WalletControl } from '../web3/WalletControl'
+import { useEthUsdPrice } from '../../web3/oracle'
 import { Button } from '../common/Button'
 import type { UserRole } from '../../types'
 
 export const Header = ({ activeTab, onSelectTab }: { activeTab: string; onSelectTab: (tab: string) => void }) => {
   const { setRole, networkMode, setNetworkMode } = useAuth()
   const { resolvedTheme, toggleTheme } = useTheme()
+  const oracle = useEthUsdPrice()
   const isPublic = activeTab === 'overview'
   const navigate = (role: UserRole) => { setRole(role); onSelectTab(role) }
   return <header className="site-header">
@@ -28,6 +30,15 @@ export const Header = ({ activeTab, onSelectTab }: { activeTab: string; onSelect
         <a href="#how-it-works" className="hidden sm:inline text-sm text-muted hover:text-foreground">How it works</a>
         <Button onClick={() => navigate('borrower')} rightIcon={<ArrowUpRight size={16} />}>Open app</Button>
       </nav> : <div className="header-controls">
+        <div
+          title={oracle.configured ? 'Chainlink ETH/USD price feed' : 'Chainlink ETH/USD feed is not configured'}
+          className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-line dark:border-line bg-surface dark:bg-surface text-xs"
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${oracle.price ? 'bg-emerald-500' : 'bg-amber-500'}`} aria-hidden="true" />
+          <span className="font-semibold">ETH/USD</span>
+          <span className="font-mono">{oracle.price ?? (oracle.configured ? 'Loading…' : 'Unavailable')}</span>
+          <span className="text-muted">Chainlink</span>
+        </div>
         <label className="mode-select"><span className="sr-only">Network mode</span>
           <select aria-label="Network mode" value={networkMode} onChange={e => setNetworkMode(e.target.value as 'demo' | 'onchain')}>
             <option value="demo">Demo mode</option><option value="onchain">{networkLabel} · Testnet</option>

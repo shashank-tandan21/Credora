@@ -82,6 +82,7 @@ export const WalletControl: React.FC = () => {
         leftIcon={<Wallet className="w-3.5 h-3.5" />}
         aria-label="Connect Wallet"
       >
+        <span className="hidden sm:inline">Wallet not connected · </span>
         <span className="hidden sm:inline">Connect Wallet</span>
         <span className="sm:hidden">Connect</span>
       </Button>
@@ -110,9 +111,10 @@ export const WalletControl: React.FC = () => {
       {/* On phones the address collapses into the disconnect button's tooltip. */}
       <div
         title={status.address}
-        className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/60 dark:bg-emerald-950/30 text-xs font-mono"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/60 dark:bg-emerald-950/30 text-xs font-mono"
       >
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+        <span className="hidden sm:inline font-sans font-semibold text-emerald-700 dark:text-emerald-300">Connected</span>
         <span className="text-foreground dark:text-foreground">{truncateAddress(status.address)}</span>
       </div>
       <button

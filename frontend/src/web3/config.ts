@@ -12,7 +12,7 @@ function readPositiveNumber(value: string | undefined, fallback: number): number
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
 }
 
-const configuredChainId = readPositiveNumber(import.meta.env.VITE_CHAIN_ID, sepolia.id)
+const configuredChainId = readPositiveNumber(import.meta.env.VITE_CHAIN_ID, hardhat.id)
 
 /** The single chain this build talks to. Every other chain is treated as a mismatch. */
 export const targetChain: Chain = SUPPORTED_CHAINS[configuredChainId] ?? sepolia
@@ -32,8 +32,8 @@ export const requiredConfirmations = readPositiveNumber(
 /** Maximum wait for a receipt before the transaction is reported as timed out. */
 export const receiptTimeoutMs = readPositiveNumber(import.meta.env.VITE_TX_TIMEOUT_MS, 180_000)
 
-/** Demo Mode is the default unless VITE_DEMO_MODE is explicitly "false". */
-export const defaultDemoMode = import.meta.env.VITE_DEMO_MODE !== 'false'
+/** On-chain Hardhat Local mode is the default; Demo Mode can be enabled explicitly. */
+export const defaultDemoMode = import.meta.env.VITE_DEMO_MODE === 'true'
 
 export const wagmiConfig = createConfig({
   chains: [targetChain],
