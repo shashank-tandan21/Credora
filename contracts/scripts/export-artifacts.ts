@@ -50,18 +50,20 @@ await writeFile(path.join(frontendDir, "abis.ts"), tsAbis.join("\n"));
 
 const localManifestPath = path.join(DEPLOYMENTS_DIR, "localhost.json");
 const localContracts: Record<string, string> = {};
+let localOracle: Record<string, string> = {};
 if (existsSync(localManifestPath)) {
   const manifest = JSON.parse(await readFile(localManifestPath, "utf8")) as DeploymentManifest;
   for (const name of CONTRACT_NAMES) {
     localContracts[camel(name)] = manifest.contracts[name].address;
   }
+  if (manifest.oracle) localOracle = { ethUsdFeed: manifest.oracle.ethUsdFeed.address };
 }
 await writeFile(
   path.join(frontendDir, "localDeployment.ts"),
   [
     `// ${HEADER}`,
     "// Deterministic addresses of a fresh `npm run deploy:local` on chain 31337. Never used for Sepolia.",
-    `export const localDeployment = ${JSON.stringify({ chainId: 31337, contracts: localContracts }, null, 2)} as const;`,
+    `export const localDeployment = ${JSON.stringify({ chainId: 31337, contracts: localContracts, oracle: localOracle }, null, 2)} as const;`,
     "",
   ].join("\n"),
 );
