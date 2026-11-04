@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-04",
+  "scope": "Frontend UI and frontend data-state handling",
+  "typecheck": "passed",
+  "unitTests": { "passed": 36, "files": 6 },
+  "build": "passed",
+  "lint": { "errors": 0, "warnings": 9 },
+  "diffCheck": "passed",
+  "browser": {
+    "engine": "Microsoft Edge, headless",
+    "routes": 6,
+    "widths": [1440, 768, 390],
+    "layoutChecksPassed": 18,
+    "runtimeErrors": 0,
+    "horizontalOverflow": 0,
+    "interactions": ["dialog focus trap", "Escape dismissal", "focus restoration", "theme toggle", "workspace selection", "deep-link reload", "mode isolation", "quoted APR", "stale quote invalidation"]
+  },
+  "limitations": [
+    "Live backend and blockchain transaction integration tests were not run.",
+    "Browser tests exercised the existing offline Demo store and disconnected on-chain UI.",
+    "Build retains the dependency warning about node:worker_threads in ox.",
+    "Fonts currently use the Google Fonts stylesheet and require network access for first load."
+  ],
+  "backendAndContractsChanged": false
+}

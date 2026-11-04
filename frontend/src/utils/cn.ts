@@ -5,15 +5,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatUSD(amount: number | null | undefined): string {
-  if (amount === null || amount === undefined) return '$0.00'
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount)
+/** Test-token display only; settlement uses exact bigint units. */
+export function formatTokenAmount(amount: number | null | undefined): string {
+  if (amount == null || !Number.isFinite(amount)) return '—'
+  return new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount) + ' mUSDC'
 }
+export const formatINR = formatTokenAmount
+export const formatUSD = formatTokenAmount
+export const formatCurrency = formatTokenAmount
 
 export function formatPercent(rate: number | null | undefined): string {
   if (rate === null || rate === undefined) return '0.0%'
@@ -39,4 +38,3 @@ export function formatDate(dateString: string | null | undefined): string {
     year: 'numeric',
   })
 }
-

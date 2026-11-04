@@ -1,67 +1,24 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
-
+import { createContext, useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react'
 type Theme = 'light' | 'dark' | 'system'
 type ResolvedTheme = 'light' | 'dark'
-
-interface ThemeContextType {
-  theme: Theme
-  resolvedTheme: ResolvedTheme
-  setTheme: (theme: Theme) => void
-  toggleTheme: () => void
-}
-
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
-
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    const saved = localStorage.getItem('credora-theme') as Theme | null
-    return saved || 'dark' // default to modern dark
+const media = () => window.matchMedia('(prefers-color-scheme: dark)')
+const subscribe = (notify: () => void) => { const query = media(); query.addEventListener('change', notify); return () => query.removeEventListener('change', notify) }
+const ThemeContext = createContext<{ theme: Theme; resolvedTheme: ResolvedTheme; setTheme: (theme: Theme) => void; toggleTheme: () => void } | undefined>(undefined)
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+  const [theme, setTheme] = useState<Theme>(() => {
+    try { const saved = localStorage.getItem('credora-theme'); return saved === 'dark' || saved === 'system' ? saved : 'light' } catch { return 'light' }
   })
-
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('dark')
-
+  const systemDark = useSyncExternalStore(subscribe, () => media().matches, () => false)
+  const resolvedTheme = theme === 'system' ? (systemDark ? 'dark' : 'light') : theme
   useEffect(() => {
-    const root = document.documentElement
-
-    const calculateResolvedTheme = (t: Theme): ResolvedTheme => {
-      if (t === 'system') {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-      }
-      return t
-    }
-
-    const currentResolved = calculateResolvedTheme(theme)
-    setResolvedTheme(currentResolved)
-
-    if (currentResolved === 'dark') {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
-
-    localStorage.setItem('credora-theme', theme)
-  }, [theme])
-
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme)
-  }
-
-  const toggleTheme = () => {
-    setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'))
-  }
-
-  return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  )
+    document.documentElement.classList.toggle('dark', resolvedTheme === 'dark')
+    try { localStorage.setItem('credora-theme', theme) } catch { /* Theme still works without storage. */ }
+  }, [theme, resolvedTheme])
+  return <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme, toggleTheme: () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark') }}>{children}</ThemeContext.Provider>
 }
-
 export const useTheme = () => {
   const context = useContext(ThemeContext)
-  if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider')
-  }
+  if (!context) throw new Error('useTheme must be used within a ThemeProvider')
   return context
 }
 

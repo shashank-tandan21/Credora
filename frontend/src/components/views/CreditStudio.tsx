@@ -1,18 +1,11 @@
 import React, { useState } from 'react'
 import {
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  ResponsiveContainer,
-} from 'recharts'
-import {
   Sliders,
   AlertCircle,
   Sparkles,
   RefreshCw,
   Scale,
+  ArrowRight,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../common/Card'
 import { Button } from '../common/Button'
@@ -33,27 +26,29 @@ const ZERO_ID = `0x${'0'.repeat(64)}`
 interface CreditStudioProps {
   currentAssessment: CreditAssessment | null
   onAssessmentUpdated: (newAssessment: CreditAssessment) => void
+  onProceedToBorrow?: () => void
 }
 
 export const CreditStudio: React.FC<CreditStudioProps> = ({
   currentAssessment,
   onAssessmentUpdated,
+  onProceedToBorrow,
 }) => {
   // Slider states for evidence
   const [repaymentHistory, setRepaymentHistory] = useState(
-    currentAssessment?.components.find((c) => c.name === 'Repayment history')?.raw_score || 88
+    currentAssessment?.components.find((c) => c.name === 'Repayment history')?.raw_score ?? 88
   )
   const [affordability, setAffordability] = useState(
-    currentAssessment?.components.find((c) => c.name === 'Affordability')?.raw_score || 82
+    currentAssessment?.components.find((c) => c.name === 'Affordability')?.raw_score ?? 82
   )
   const [debtBurden, setDebtBurden] = useState(
-    currentAssessment?.components.find((c) => c.name === 'Debt burden')?.raw_score || 80
+    currentAssessment?.components.find((c) => c.name === 'Debt burden')?.raw_score ?? 80
   )
   const [cashFlow, setCashFlow] = useState(
-    currentAssessment?.components.find((c) => c.name === 'Cash-flow stability')?.raw_score || 75
+    currentAssessment?.components.find((c) => c.name === 'Cash-flow stability')?.raw_score ?? 75
   )
   const [evidenceQuality, setEvidenceQuality] = useState(
-    currentAssessment?.components.find((c) => c.name === 'Evidence quality')?.raw_score || 90
+    currentAssessment?.components.find((c) => c.name === 'Evidence quality')?.raw_score ?? 90
   )
 
   const [isCommitting, setIsCommitting] = useState(false)
@@ -143,29 +138,29 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
     <div className="space-y-6">
       {/* Dispute Alert Banner */}
       {disputeStatus && (
-        <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-950/40 dark:border-amber-800/60 dark:text-amber-300 text-xs font-medium">
+        <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-950/40 dark:border-amber-800/60 dark:text-amber-300 text-sm font-medium">
           <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
           <span>{disputeStatus}</span>
         </div>
       )}
 
       {/* Header Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-line dark:border-line">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Sliders className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            Explainable Credit Scoring Studio
+          <h2 className="text-xl font-semibold tracking-tight text-foreground dark:text-foreground flex items-center gap-2">
+            <Sliders className="w-5 h-5 text-accent dark:text-accent" />
+            Assessment calculator
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Deterministic 5-factor scoring model with transparent weights and explainability audit
+          <p className="text-sm text-muted dark:text-muted mt-0.5">
+            Adjust the factor inputs to explore your assessment. Save when you are ready.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {(onchain ? onChainAssessmentId : currentAssessment) && (
             <Button
               size="sm"
               variant="outline"
-              className="text-xs"
+              className="text-sm"
               onClick={() => setIsDisputeOpen(true)}
               leftIcon={<Scale className="w-3.5 h-3.5" />}
             >
@@ -178,8 +173,9 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
             isLoading={isCommitting}
             leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
           >
-            Commit Assessment
+            Save assessment
           </Button>
+
         </div>
       </div>
 
@@ -191,27 +187,27 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base">Financial Evidence Inputs</CardTitle>
+                  <CardTitle className="text-base">Assessment inputs</CardTitle>
                   <CardDescription>
-                    Adjust calibrated parameters to simulate your credit assessment
+                    Enter normalized factor scores. These inputs are self-reported.
                   </CardDescription>
                 </div>
                 <Badge variant="indigo" size="sm">
-                  Academic Model v1.0
+                  Five-factor model
                 </Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-5">
               {/* Factor 1: Repayment History */}
               <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-semibold text-foreground dark:text-foreground flex items-center gap-1.5">
                     Repayment History
-                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-mono font-normal">
+                    <span className="text-sm text-accent dark:text-accent tabular-nums font-normal">
                       (35% Weight)
                     </span>
                   </span>
-                  <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                  <span className="tabular-nums font-semibold text-foreground dark:text-foreground">
                     {repaymentHistory}/100
                   </span>
                 </div>
@@ -219,11 +215,12 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
                   type="range"
                   min="0"
                   max="100"
+                  aria-label="Repayment history score"
                   value={repaymentHistory}
                   onChange={(e) => setRepaymentHistory(Number(e.target.value))}
-                  className="w-full accent-blue-600 dark:accent-blue-400 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg"
+                  className="w-full accent-brand cursor-pointer h-1.5 bg-subtle dark:bg-subtle rounded-lg"
                 />
-                <div className="flex justify-between text-[10px] text-slate-400">
+                <div className="flex justify-between text-sm text-muted">
                   <span>Delinquent (0)</span>
                   <span>Average (50)</span>
                   <span>Flawless (100)</span>
@@ -232,14 +229,14 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
 
               {/* Factor 2: Affordability */}
               <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-semibold text-foreground dark:text-foreground flex items-center gap-1.5">
                     Affordability & Residual Income
-                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-mono font-normal">
+                    <span className="text-sm text-accent dark:text-accent tabular-nums font-normal">
                       (25% Weight)
                     </span>
                   </span>
-                  <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                  <span className="tabular-nums font-semibold text-foreground dark:text-foreground">
                     {affordability}/100
                   </span>
                 </div>
@@ -247,11 +244,12 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
                   type="range"
                   min="0"
                   max="100"
+                  aria-label="Affordability score"
                   value={affordability}
                   onChange={(e) => setAffordability(Number(e.target.value))}
-                  className="w-full accent-blue-600 dark:accent-blue-400 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg"
+                  className="w-full accent-brand cursor-pointer h-1.5 bg-subtle dark:bg-subtle rounded-lg"
                 />
-                <div className="flex justify-between text-[10px] text-slate-400">
+                <div className="flex justify-between text-sm text-muted">
                   <span>Constrained (0)</span>
                   <span>Moderate (50)</span>
                   <span>Substantial (100)</span>
@@ -260,14 +258,14 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
 
               {/* Factor 3: Debt Burden */}
               <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-semibold text-foreground dark:text-foreground flex items-center gap-1.5">
                     Debt Burden / Leverage Ratio
-                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-mono font-normal">
+                    <span className="text-sm text-accent dark:text-accent tabular-nums font-normal">
                       (15% Weight)
                     </span>
                   </span>
-                  <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                  <span className="tabular-nums font-semibold text-foreground dark:text-foreground">
                     {debtBurden}/100
                   </span>
                 </div>
@@ -275,11 +273,12 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
                   type="range"
                   min="0"
                   max="100"
+                  aria-label="Debt burden score"
                   value={debtBurden}
                   onChange={(e) => setDebtBurden(Number(e.target.value))}
-                  className="w-full accent-blue-600 dark:accent-blue-400 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg"
+                  className="w-full accent-brand cursor-pointer h-1.5 bg-subtle dark:bg-subtle rounded-lg"
                 />
-                <div className="flex justify-between text-[10px] text-slate-400">
+                <div className="flex justify-between text-sm text-muted">
                   <span>High Debt (0)</span>
                   <span>Manageable (50)</span>
                   <span>Minimal/Zero (100)</span>
@@ -288,14 +287,14 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
 
               {/* Factor 4: Cash-Flow Stability */}
               <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-semibold text-foreground dark:text-foreground flex items-center gap-1.5">
                     Cash-Flow Stability
-                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-mono font-normal">
+                    <span className="text-sm text-accent dark:text-accent tabular-nums font-normal">
                       (15% Weight)
                     </span>
                   </span>
-                  <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                  <span className="tabular-nums font-semibold text-foreground dark:text-foreground">
                     {cashFlow}/100
                   </span>
                 </div>
@@ -303,11 +302,12 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
                   type="range"
                   min="0"
                   max="100"
+                  aria-label="Cash-flow stability score"
                   value={cashFlow}
                   onChange={(e) => setCashFlow(Number(e.target.value))}
-                  className="w-full accent-blue-600 dark:accent-blue-400 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg"
+                  className="w-full accent-brand cursor-pointer h-1.5 bg-subtle dark:bg-subtle rounded-lg"
                 />
-                <div className="flex justify-between text-[10px] text-slate-400">
+                <div className="flex justify-between text-sm text-muted">
                   <span>Erratic (0)</span>
                   <span>Seasonal (50)</span>
                   <span>Predictable (100)</span>
@@ -316,14 +316,14 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
 
               {/* Factor 5: Evidence Quality */}
               <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-semibold text-foreground dark:text-foreground flex items-center gap-1.5">
                     Evidence Quality & Document Verifiability
-                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-mono font-normal">
+                    <span className="text-sm text-accent dark:text-accent tabular-nums font-normal">
                       (10% Weight)
                     </span>
                   </span>
-                  <span className="font-mono font-bold text-slate-900 dark:text-slate-100">
+                  <span className="tabular-nums font-semibold text-foreground dark:text-foreground">
                     {evidenceQuality}/100
                   </span>
                 </div>
@@ -331,14 +331,15 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
                   type="range"
                   min="0"
                   max="100"
+                  aria-label="Evidence quality score"
                   value={evidenceQuality}
                   onChange={(e) => setEvidenceQuality(Number(e.target.value))}
-                  className="w-full accent-blue-600 dark:accent-blue-400 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg"
+                  className="w-full accent-brand cursor-pointer h-1.5 bg-subtle dark:bg-subtle rounded-lg"
                 />
-                <div className="flex justify-between text-[10px] text-slate-400">
-                  <span>Unverified (0)</span>
+                <div className="flex justify-between text-sm text-muted">
+                  <span>Low (0)</span>
                   <span>Standard (50)</span>
-                  <span>Third-Party Certified (100)</span>
+                  <span>High (100)</span>
                 </div>
               </div>
             </CardContent>
@@ -350,71 +351,67 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
           <Card className="flex flex-col">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Multivariate Metric Radar</CardTitle>
+                <CardTitle className="text-base">Factor breakdown</CardTitle>
                 <RiskBadge category={projectedCategory as any} size="sm" />
               </div>
-              <CardDescription>Visual comparison against protocol benchmark (70.0)</CardDescription>
+              <CardDescription>Your input for each factor, on a scale of 0 to 100.</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 flex flex-col items-center justify-center">
-              <div className="w-full h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
-                    <PolarGrid stroke="#cbd5e1" strokeDasharray="3 3" opacity={0.5} />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10 }} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                    <Radar
-                      name="Benchmark"
-                      dataKey="benchmark"
-                      stroke="#94a3b8"
-                      fill="#94a3b8"
-                      fillOpacity={0.15}
-                    />
-                    <Radar
-                      name="Score"
-                      dataKey="value"
-                      stroke="#2563eb"
-                      fill="#3b82f6"
-                      fillOpacity={0.45}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
+              <dl className="w-full space-y-4 py-4">
+                {radarData.map(factor => <div key={factor.subject}>
+                  <div className="flex justify-between gap-3 text-sm mb-2"><dt>{factor.subject}</dt><dd className="tabular-nums font-medium">{factor.value} / 100</dd></div>
+                  <div className="h-1.5 rounded-full bg-subtle overflow-hidden"><div className="h-full rounded-full bg-brand" style={{ width: factor.value + '%' }} /></div>
+                </div>)}
+              </dl>
 
               {/* Projected Summary Box */}
-              <div className="w-full grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 mt-2">
+              <div className="w-full grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-surface dark:bg-subtle border border-line dark:border-line mt-2">
                 <div>
-                  <span className="text-[11px] text-slate-500">Projected Score</span>
-                  <div className="text-xl font-bold font-mono text-blue-600 dark:text-blue-400">
+                  <span className="text-sm text-muted">Projected Score</span>
+                  <div className="text-xl font-semibold tabular-nums text-accent dark:text-accent">
                     {projectedScore.toFixed(2)}
                   </div>
                 </div>
                 <div>
-                  <span className="text-[11px] text-slate-500">Borrowing Limit</span>
-                  <div className="text-xl font-bold font-mono text-slate-900 dark:text-slate-100">
+                  <span className="text-sm text-muted">Estimated limit</span>
+                  <div className="text-xl font-semibold tabular-nums text-foreground dark:text-foreground">
                     {formatUSD(projectedLimit)}
                   </div>
                 </div>
               </div>
+
+              {onProceedToBorrow && (
+                <Button
+                  size="sm"
+                  className="w-full mt-3"
+                  variant="outline"
+                  disabled={!currentAssessment}
+                  onClick={onProceedToBorrow}
+                  rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                >
+                  Review loan options
+                </Button>
+              )}
             </CardContent>
           </Card>
 
           {/* Explainability Explanations Card */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-                Score Explainability Notes
+              <CardTitle className="text-sm uppercase tracking-wider text-muted dark:text-muted flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-accent" />
+                Saved assessment notes
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
+              <ul className="space-y-1.5 text-sm text-muted dark:text-muted">
                 {currentAssessment?.explanation.map((item, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-brand mt-1.5 shrink-0" />
                     <span>{item}</span>
                   </li>
                 )) || (
-                  <li className="text-slate-400 italic">
+                  <li className="text-muted italic">
                     Commit your inputs to generate automated explainability factors.
                   </li>
                 )}
@@ -432,14 +429,14 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
         description="Submit documented evidence or context if you believe an external factor unjustly impacted your scoring."
       >
         <form onSubmit={handleDisputeSubmit} className="space-y-4">
-          <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800 text-xs space-y-1">
-            <span className="text-slate-500">
+          <div className="p-3 rounded-lg bg-surface dark:bg-subtle text-sm space-y-1">
+            <span className="text-muted">
               {onchain ? 'On-chain attestation (assessment id):' : 'Assessment ID:'}
             </span>
-            <div className="font-mono text-slate-800 dark:text-slate-200 break-all">
+            <div className="tabular-nums text-foreground dark:text-foreground break-all">
               {onchain ? onChainAssessmentId ?? 'No on-chain attestation to dispute' : currentAssessment?.id}
             </div>
-            <div className="flex gap-4 pt-1 font-mono text-slate-700 dark:text-slate-300">
+            <div className="flex gap-4 pt-1 tabular-nums text-foreground dark:text-foreground">
               {onchain ? (
                 <span>Attested Score: {chainBorrower.scoreBps > 0 ? (chainBorrower.scoreBps / 100).toFixed(2) : '—'}</span>
               ) : (
@@ -452,9 +449,9 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="dispute-reason" className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+            <label htmlFor="dispute-reason" className="block text-sm font-medium text-foreground dark:text-foreground">
               Reason for Dispute / Clarification
-              {onchain && <span className="font-normal text-slate-500"> (only its hash is written on-chain)</span>}
+              {onchain && <span className="font-normal text-muted"> (only its hash is written on-chain)</span>}
             </label>
             <textarea
               id="dispute-reason"
@@ -463,7 +460,7 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
               value={disputeReason}
               onChange={(e) => setDisputeReason(e.target.value)}
               placeholder="e.g. University bursary deposit was recorded late by administrative office, which created a false dip in cash-flow stability. Bank reconciliation letter attached."
-              className="w-full rounded-lg border border-slate-300 bg-white p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 transition-colors"
+              className="w-full rounded-lg border border-line bg-surface p-3 text-sm text-foreground placeholder:text-muted focus:border-line focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-line dark:bg-surface dark:text-muted transition-colors"
             />
           </div>
 

@@ -20,20 +20,26 @@ export const ReviewerDesk: React.FC = () => {
   const [selectedDispute, setSelectedDispute] = useState<DisputeRecord | null>(null)
   const [reviewNotes, setReviewNotes] = useState('')
   const [isResolving, setIsResolving] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [notification, setNotification] = useState<string | null>(null)
 
   const reloadDisputes = async () => {
+    setIsLoading(true)
+    setLoadError(null)
     try {
       const list = await api.listDisputes()
       setDisputes(list)
     } catch {
-      // ignore
+      setLoadError('Could not load disputes. Please try again.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    reloadDisputes()
-  }, [])
+    if (networkMode === 'demo') void reloadDisputes()
+  }, [networkMode])
 
   const handleResolve = async (status: 'resolved_adjusted' | 'rejected') => {
     if (!selectedDispute || !reviewNotes.trim()) return
@@ -45,37 +51,41 @@ export const ReviewerDesk: React.FC = () => {
       setReviewNotes('')
       setNotification(
         `Dispute ${selectedDispute.id} has been marked as ${
-          status === 'resolved_adjusted' ? 'Approved & Score Adjusted' : 'Rejected'
+          status === 'resolved_adjusted' ? 'Approved' : 'Rejected'
         }. Demo decision recorded in this browser only (no blockchain transaction).`
       )
       setTimeout(() => setNotification(null), 6000)
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : 'The decision could not be saved.')
     } finally {
       setIsResolving(false)
     }
   }
 
+  if (networkMode === 'onchain') return <OperationsConsole />
+
   return (
     <div className="space-y-6">
       {/* Alert Banner */}
       {notification && (
-        <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 dark:bg-blue-950/40 dark:border-blue-800/60 dark:text-blue-300 text-xs font-medium">
-          <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+        <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-brand-soft border border-line text-accent dark:bg-brand-soft dark:border-line dark:text-accent text-sm font-medium">
+          <Sparkles className="w-4 h-4 text-accent dark:text-accent shrink-0" />
           <span>{notification}</span>
         </div>
       )}
 
       {/* Header */}
-      <div className="pb-2 border-b border-slate-200/80 dark:border-slate-800">
-        <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-          <Scale className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-          Reviewer & Dispute Adjudication Desk
+      <div className="pb-2 border-b border-line dark:border-line">
+        <h2 className="text-xl font-semibold tracking-tight text-foreground dark:text-foreground flex items-center gap-2">
+          <Scale className="w-5 h-5 text-accent dark:text-accent" />
+          Dispute review
         </h2>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Role-protected reviewer queue for credit assessment disputes and workout audits
+        <p className="text-sm text-muted dark:text-muted mt-0.5">
+          Review assessment disputes and record a decision.
         </p>
       </div>
 
-      {networkMode === 'onchain' && <OperationsConsole />}
+      {loadError && <div role="alert" className="inline-notice"><p>{loadError}</p><Button onClick={reloadDisputes} variant="outline">Retry</Button></div>}
 
       {/* Queue Table */}
       <Card>
@@ -83,7 +93,7 @@ export const ReviewerDesk: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-base flex items-center gap-2">
-                <FileText className="w-4 h-4 text-indigo-500" />
+                <FileText className="w-4 h-4 text-accent" />
                 Active Dispute Queue
               </CardTitle>
               <CardDescription>
@@ -96,9 +106,9 @@ export const ReviewerDesk: React.FC = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+          <div className="overflow-x-auto rounded-lg border border-line dark:border-line">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-surface dark:bg-subtle text-muted dark:text-muted border-b border-line dark:border-line">
                 <tr>
                   <th className="p-3 font-medium">Dispute ID</th>
                   <th className="p-3 font-medium">Borrower Wallet</th>
@@ -108,20 +118,20 @@ export const ReviewerDesk: React.FC = () => {
                   <th className="p-3 font-medium text-right">Adjudication</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 tabular-nums">
                 {disputes.length > 0 ? (
                   disputes.map((item) => (
                     <tr
                       key={item.id}
-                      className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                      className="hover:bg-surface dark:hover:bg-subtle transition-colors"
                     >
-                      <td className="p-3 font-semibold text-slate-900 dark:text-slate-100">
+                      <td className="p-3 font-semibold text-foreground dark:text-foreground">
                         {item.id}
                       </td>
-                      <td className="p-3 text-blue-600 dark:text-blue-400">
+                      <td className="p-3 text-accent dark:text-accent">
                         {truncateAddress(item.borrower_wallet, 6)}
                       </td>
-                      <td className="p-3 text-slate-500">{formatDate(item.created_at)}</td>
+                      <td className="p-3 text-muted">{formatDate(item.created_at)}</td>
                       <td className="p-3">
                         {item.status === 'pending' ? (
                           <Badge variant="warning" size="sm">
@@ -129,7 +139,7 @@ export const ReviewerDesk: React.FC = () => {
                           </Badge>
                         ) : item.status === 'resolved_adjusted' ? (
                           <Badge variant="success" size="sm">
-                            Adjusted
+                            Approved
                           </Badge>
                         ) : (
                           <Badge variant="destructive" size="sm">
@@ -137,15 +147,15 @@ export const ReviewerDesk: React.FC = () => {
                           </Badge>
                         )}
                       </td>
-                      <td className="p-3 max-w-xs truncate text-slate-600 dark:text-slate-300 font-sans">
-                        {item.dispute_reason}
+                      <td className="p-3 max-w-xs truncate text-muted dark:text-muted font-sans">
+                        {item.dispute_reason || 'Reason text unavailable'}
                       </td>
                       <td className="p-3 text-right">
                         {item.status === 'pending' ? (
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-7 text-xs"
+                            className="h-7 text-sm"
                             onClick={() => {
                               setSelectedDispute(item)
                               setReviewNotes('')
@@ -154,15 +164,15 @@ export const ReviewerDesk: React.FC = () => {
                             Review & Decide
                           </Button>
                         ) : (
-                          <span className="text-[11px] text-slate-400 italic">Resolved</span>
+                          <span className="text-sm text-muted italic">Resolved</span>
                         )}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-xs text-slate-400 font-sans">
-                      No active disputes in the reviewer queue.
+                    <td colSpan={6} className="p-8 text-center text-sm text-muted font-sans">
+                      {isLoading ? 'Loading disputes…' : loadError ? 'Disputes are unavailable.' : 'No disputes to review.'}
                     </td>
                   </tr>
                 )}
@@ -181,29 +191,29 @@ export const ReviewerDesk: React.FC = () => {
       >
         {selectedDispute && (
           <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 space-y-2 text-xs">
-              <div className="flex justify-between font-mono">
-                <span className="text-slate-500">Dispute ID:</span>
-                <span className="font-bold text-slate-900 dark:text-slate-100">
+            <div className="p-4 rounded-xl bg-surface dark:bg-subtle border border-line dark:border-line space-y-2 text-sm">
+              <div className="flex justify-between tabular-nums">
+                <span className="text-muted">Dispute ID:</span>
+                <span className="font-semibold text-foreground dark:text-foreground">
                   {selectedDispute.id}
                 </span>
               </div>
-              <div className="flex justify-between font-mono">
-                <span className="text-slate-500">Borrower Wallet:</span>
-                <span className="text-blue-600 dark:text-blue-400">
+              <div className="flex justify-between tabular-nums">
+                <span className="text-muted">Borrower Wallet:</span>
+                <span className="text-accent dark:text-accent">
                   {selectedDispute.borrower_wallet}
                 </span>
               </div>
-              <div className="pt-2 border-t border-slate-200 dark:border-slate-700/60">
-                <span className="text-slate-500 font-medium">Borrower Claim:</span>
-                <p className="mt-1 text-slate-800 dark:text-slate-200 italic leading-relaxed">
+              <div className="pt-2 border-t border-line dark:border-line">
+                <span className="text-muted font-medium">Borrower Claim:</span>
+                <p className="mt-1 text-foreground dark:text-foreground italic leading-relaxed">
                   "{selectedDispute.dispute_reason}"
                 </p>
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+              <label className="block text-sm font-medium text-foreground dark:text-foreground">
                 Reviewer Justification & Audit Notes (Required)
               </label>
               <textarea
@@ -212,7 +222,7 @@ export const ReviewerDesk: React.FC = () => {
                 value={reviewNotes}
                 onChange={(e) => setReviewNotes(e.target.value)}
                 placeholder="e.g. Verified university payroll remittance slip confirming 4-day administrative delay. Adjusting Cash-Flow factor from 78 to 86."
-                className="w-full rounded-lg border border-slate-300 bg-white p-3 text-xs text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 transition-colors"
+                className="w-full rounded-lg border border-line bg-surface p-3 text-sm text-foreground placeholder:text-muted focus:border-line focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-line dark:bg-surface dark:text-muted transition-colors"
               />
             </div>
 
@@ -243,7 +253,7 @@ export const ReviewerDesk: React.FC = () => {
                 isLoading={isResolving}
                 disabled={!reviewNotes.trim()}
               >
-                Approve & Adjust
+                Approve dispute
               </Button>
             </div>
           </div>

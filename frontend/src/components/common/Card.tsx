@@ -9,7 +9,7 @@ export const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   return (
     <div
       className={cn(
-        'rounded-2xl border border-slate-200/70 bg-white shadow-xs dark:border-slate-800/80 dark:bg-[#111827] text-slate-900 dark:text-slate-100 transition-all',
+        'rounded-xl border border-line bg-surface shadow-none dark:border-line dark:bg-surface text-foreground dark:text-foreground transition-all',
         className
       )}
       {...props}
@@ -25,7 +25,7 @@ export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   ...props
 }) => {
   return (
-    <div className={cn('p-6 pb-3 flex flex-col space-y-1.5', className)} {...props}>
+    <div className={cn('p-5 sm:p-6 pb-4 flex flex-col space-y-1.5', className)} {...props}>
       {children}
     </div>
   )
@@ -38,7 +38,7 @@ export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
 }) => {
   return (
     <h3
-      className={cn('text-base font-semibold leading-none tracking-tight', className)}
+      className={cn('text-lg font-semibold leading-snug tracking-tight', className)}
       {...props}
     >
       {children}
@@ -52,7 +52,7 @@ export const CardDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement
   ...props
 }) => {
   return (
-    <p className={cn('text-xs text-slate-500 dark:text-slate-400', className)} {...props}>
+    <p className={cn('text-sm text-muted dark:text-muted', className)} {...props}>
       {children}
     </p>
   )
@@ -64,7 +64,7 @@ export const CardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   ...props
 }) => {
   return (
-    <div className={cn('p-6 pt-0', className)} {...props}>
+    <div className={cn('p-5 sm:p-6 pt-0 sm:pt-0', className)} {...props}>
       {children}
     </div>
   )
@@ -78,7 +78,7 @@ export const CardFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   return (
     <div
       className={cn(
-        'p-6 pt-0 border-t border-slate-100 dark:border-slate-800/80 mt-4 flex items-center',
+        'p-6 pt-0 border-t border-line dark:border-line mt-4 flex items-center',
         className
       )}
       {...props}

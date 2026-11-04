@@ -255,6 +255,7 @@ export interface DeploymentManifest {
   seeded: boolean;
   loanParameters: Record<string, string | number | boolean>;
   contracts: Record<ContractName, DeploymentRecord>;
+  oracle?: { ethUsdFeed: DeploymentRecord };
 }
 
 export function buildManifest(
@@ -299,6 +300,10 @@ export async function writeManifest(manifest: DeploymentManifest): Promise<strin
     const key = name.replace(/([a-z])([A-Z])/g, "$1_$2").toUpperCase();
     lines.push(`${key}_ADDRESS=${manifest.contracts[name].address}`);
     lines.push(`VITE_${key}_ADDRESS=${manifest.contracts[name].address}`);
+  }
+  if (manifest.oracle) {
+    lines.push(`ETH_USD_FEED_ADDRESS=${manifest.oracle.ethUsdFeed.address}`);
+    lines.push(`VITE_ETH_USD_FEED_ADDRESS=${manifest.oracle.ethUsdFeed.address}`);
   }
   await writeFile(envFile, `${lines.join("\n")}\n`);
   return file;

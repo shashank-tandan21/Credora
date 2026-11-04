@@ -48,6 +48,15 @@ const protocol = await deployProtocol(ethers, {
   log: console.log,
 });
 
+const oracle = await ethers.deployContract("MockEthUsdFeed", [2000_00000000], deployer);
+await oracle.waitForDeployment();
+const oracleTransaction = oracle.deploymentTransaction();
+if (oracleTransaction === null) throw new Error("MockEthUsdFeed has no deployment transaction");
+const oracleReceipt = await oracleTransaction.wait();
+if (oracleReceipt === null || oracleReceipt.status !== 1) throw new Error("MockEthUsdFeed deployment failed");
+const oracleAddress = await oracle.getAddress();
+console.log(`  MockEthUsdFeed       ${oracleAddress}  (ETH/USD $2,000 local feed)`);
+
 let seeded = false;
 if (chainId === LOCAL_CHAIN_ID) {
   console.log("Seeding local balances");
@@ -64,6 +73,14 @@ if (networkName === "default") {
   console.log("In-process network is ephemeral; no deployment manifest written. Use --network localhost.");
 } else {
   const manifest = buildManifest(networkName, chainId, deployer.address, protocol, seeded);
+  manifest.oracle = {
+    ethUsdFeed: {
+      address: oracleAddress,
+      transactionHash: oracleTransaction.hash,
+      blockNumber: oracleReceipt.blockNumber,
+      constructorArgs: [2000_00000000],
+    },
+  };
   const file = await writeManifest(manifest);
   console.log(`Manifest written to ${file}`);
   console.log(`Environment values written to ${file.replace(/\.json$/, ".env.example")}`);

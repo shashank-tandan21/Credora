@@ -15,11 +15,13 @@ import type {
 const API_BASE = '/api/v1'
 
 class ApiClient {
+  private networkMode: 'demo' | 'onchain' = ['onchain', 'sepolia'].includes(localStorage.getItem('credora-network') || '') || (!localStorage.getItem('credora-network') && import.meta.env.VITE_DEMO_MODE === 'false') ? 'onchain' : 'demo'
   private token: string | null = null
   private tokenWallet: string | null = null
   private currentRole: UserRole = 'borrower'
   private demoWallet: string = '0x71C83955620935560935593883839281728392A1'
   private isBackendAvailable: boolean | null = null
+  private authPromise: Promise<string> | null = null
 
   constructor() {
     this.token = localStorage.getItem('credora-token')
@@ -37,6 +39,11 @@ class ApiClient {
       localStorage.removeItem('credora-token')
       localStorage.removeItem('credora-token-wallet')
     }
+  }
+
+  setNetworkMode(mode: 'demo' | 'onchain') {
+    this.networkMode = mode
+    if (mode === 'onchain' && this.token?.startsWith('demo_token_')) this.setToken(null)
   }
 
   getToken(): string | null {
@@ -71,18 +78,26 @@ class ApiClient {
     if (this.token) {
       return this.token
     }
-    try {
-      const normalizedWallet = this.demoWallet.toLowerCase()
-      const { nonce } = await this.requestNonce(normalizedWallet)
-      const res = await this.verifySignature(normalizedWallet, nonce, `demo:${nonce}`)
-      return res.access_token
-    } catch {
-      return ''
+    if (this.authPromise) {
+      return this.authPromise
     }
+    this.authPromise = (async () => {
+      try {
+        const normalizedWallet = this.demoWallet.toLowerCase()
+        const { nonce } = await this.requestNonce(normalizedWallet)
+        const res = await this.verifySignature(normalizedWallet, nonce, `demo:${nonce}`)
+        return res.access_token
+      } catch {
+        return ''
+      } finally {
+        this.authPromise = null
+      }
+    })()
+    return this.authPromise
   }
 
   private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
-    const headers: Record<string, string> = {
+    let headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
     }
@@ -96,7 +111,7 @@ class ApiClient {
     }
 
     try {
-      const response = await fetch(`${API_BASE}${path}`, {
+      let response = await fetch(`${API_BASE}${path}`, {
         ...options,
         headers,
       })
@@ -105,26 +120,32 @@ class ApiClient {
         this.token = null
         await this.ensureAuthenticated()
         if (this.token) {
-          headers['Authorization'] = `Bearer ${this.token}`
-          const retryRes = await fetch(`${API_BASE}${path}`, {
+          headers = {
+            ...headers,
+            'Authorization': `Bearer ${this.token}`,
+          }
+          response = await fetch(`${API_BASE}${path}`, {
             ...options,
             headers,
           })
-          if (retryRes.ok) {
-            this.isBackendAvailable = true
-            return await retryRes.json()
-          }
         }
       }
 
+      // The development proxy reports an unreachable backend as an HTTP 5xx.
+      // Only Demo mode may continue using the existing simulated data store.
+      if (response.status >= 500 && this.networkMode === 'demo') {
+        this.isBackendAvailable = false
+        throw new Error('BACKEND_OFFLINE')
+      }
       if (!response.ok) {
-        let errMessage = `HTTP ${response.status}`
+        let errDetail = ''
         try {
           const errData = await response.json()
-          errMessage = errData.detail || errData.error?.message || errMessage
+          errDetail = errData.detail || errData.error?.message || ''
         } catch {
           // ignore json parse error
         }
+        const errMessage = errDetail ? `HTTP ${response.status}: ${errDetail}` : `HTTP ${response.status}`
         throw new Error(errMessage)
       }
 
@@ -154,7 +175,7 @@ class ApiClient {
       })
     } catch (err: unknown) {
       const error = err as Error
-      if (error.message === 'BACKEND_OFFLINE') {
+      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
         const nonce = `credora-demo-${Date.now().toString(36)}`
         return {
           nonce,
@@ -188,7 +209,7 @@ class ApiClient {
       return data
     } catch (err: unknown) {
       const error = err as Error
-      if (error.message === 'BACKEND_OFFLINE') {
+      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
         const mockToken = `demo_token_${Date.now()}`
         this.setToken(mockToken)
         return {
@@ -210,11 +231,12 @@ class ApiClient {
       return await this.request<BorrowerProfile>('/borrowers/me')
     } catch (err: unknown) {
       const error = err as Error
-      if (error.message === 'BACKEND_OFFLINE') {
+      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
         return mockStore.getProfile(this.demoWallet)
       }
       if (
         error.message.includes('404') ||
+        error.message.includes('401') ||
         error.message.includes('not been registered') ||
         error.message.includes('not registered')
       ) {
@@ -232,7 +254,7 @@ class ApiClient {
       })
     } catch (err: unknown) {
       const error = err as Error
-      if (error.message === 'BACKEND_OFFLINE') {
+      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
         return mockStore.registerProfile(this.demoWallet, displayName, bio)
       }
       throw error
@@ -268,7 +290,7 @@ class ApiClient {
       })
     } catch (err: unknown) {
       const error = err as Error
-      if (error.message === 'BACKEND_OFFLINE') {
+      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
         return mockStore.saveEvidence(this.demoWallet, evidence)
       }
       throw error
@@ -283,7 +305,7 @@ class ApiClient {
       })
     } catch (err: unknown) {
       const error = err as Error
-      if (error.message === 'BACKEND_OFFLINE') {
+      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
         return mockStore.generateAssessment(this.demoWallet, validityDays)
       }
       throw error
@@ -295,13 +317,15 @@ class ApiClient {
       return await this.request<CreditAssessment>('/credit/current')
     } catch (err: unknown) {
       const error = err as Error
-      if (error.message === 'BACKEND_OFFLINE') {
+      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
         return mockStore.getCurrentAssessment(this.demoWallet)
       }
       if (
         error.message.includes('404') ||
+        error.message.includes('401') ||
         error.message.includes('422') ||
         error.message.includes('No active credit assessment') ||
+        error.message.includes('No credit assessment exists') ||
         error.message.includes('expired')
       ) {
         return null
@@ -315,7 +339,7 @@ class ApiClient {
       return await this.request<CreditAssessment[]>('/credit/history')
     } catch (err: unknown) {
       const error = err as Error
-      if (error.message === 'BACKEND_OFFLINE') {
+      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
         return mockStore.getAssessmentHistory(this.demoWallet)
       }
       return []
@@ -331,7 +355,7 @@ class ApiClient {
       })
     } catch (err: unknown) {
       const error = err as Error
-      if (error.message === 'BACKEND_OFFLINE') {
+      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
         return mockStore.calculateQuote(this.demoWallet, amount, durationDays)
       }
       throw error
@@ -346,7 +370,7 @@ class ApiClient {
       })
     } catch (err: unknown) {
       const error = err as Error
-      if (error.message === 'BACKEND_OFFLINE') {
+      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
         return mockStore.createLoan(this.demoWallet, amount, durationDays)
       }
       throw error
@@ -358,10 +382,17 @@ class ApiClient {
       return await this.request<LoanRequest[]>('/loans')
     } catch (err: unknown) {
       const error = err as Error
-      if (error.message === 'BACKEND_OFFLINE') {
+      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
         return mockStore.getLoans(this.demoWallet)
       }
-      return []
+      if (
+        error.message.includes('404') ||
+        error.message.includes('not been registered') ||
+        (this.networkMode === 'demo' && error.message.includes('401'))
+      ) {
+        return []
+      }
+      throw error
     }
   }
 
@@ -371,7 +402,7 @@ class ApiClient {
       return await this.request<PoolStatistics>('/pool/statistics')
     } catch (err: unknown) {
       const error = err as Error
-      if (error.message === 'BACKEND_OFFLINE') {
+      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
         return mockStore.getPoolStats()
       }
       throw error
@@ -474,7 +505,7 @@ class InBrowserDemoStore {
       explanation: [
         'Repayment history is the strongest positive factor at 92.0/100.',
         'Cash-flow stability is the main factor limiting the score at 78.0/100.',
-        'This is an academic prototype score and not a validated lending risk model.',
+        'This assessment uses the supplied factor inputs; it is not independent verification of income or repayment capacity.',
       ],
       academic_model: true,
       valid_from: new Date(Date.now() - 7 * 86400000).toISOString(),
@@ -624,7 +655,7 @@ class InBrowserDemoStore {
       explanation: [
         `${strongest} is the strongest positive factor at ${values[strongest as keyof typeof values].toFixed(1)}/100.`,
         `${weakest} is the main factor limiting the score at ${values[weakest as keyof typeof values].toFixed(1)}/100.`,
-        'This is an academic prototype score and not a validated lending risk model.',
+        'This assessment uses the supplied factor inputs; it is not independent verification of income or repayment capacity.',
       ],
       academic_model: true,
       valid_from: new Date().toISOString(),

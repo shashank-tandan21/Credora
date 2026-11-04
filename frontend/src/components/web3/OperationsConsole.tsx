@@ -21,14 +21,14 @@ import { formatTimestamp, formatUsdcExact, hashText, isUuid, scoreToBps, uuidToB
 import { useContractTransaction } from '../../web3/useContractTransaction'
 
 const textareaClass =
-  'w-full rounded-lg border border-slate-300 bg-white p-2.5 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100'
+  'w-full rounded-lg border border-line bg-surface p-2.5 text-xs text-foreground focus:border-line focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-line dark:bg-surface dark:text-muted'
 
 const RoleChip: React.FC<{ label: string; held: boolean }> = ({ label, held }) => (
   <span
-    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium ${
+    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
       held
         ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
-        : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+        : 'bg-surface text-muted dark:bg-subtle dark:text-muted'
     }`}
   >
     {held ? <BadgeCheck className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
@@ -57,7 +57,7 @@ export const OperationsConsole: React.FC = () => {
   const [borrower, setBorrower] = useState('')
   const [score, setScore] = useState('71')
   const [validityDays, setValidityDays] = useState('90')
-  const [assessmentId, setAssessmentId] = useState<string>(() => crypto.randomUUID())
+  const [assessmentId, setAssessmentId] = useState<string>('')
   const [formError, setFormError] = useState<string | null>(null)
 
   const [loanIdInput, setLoanIdInput] = useState('')
@@ -125,7 +125,7 @@ export const OperationsConsole: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <CardTitle className="text-base flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-indigo-500" />
+              <ShieldCheck className="w-4 h-4 text-accent" />
               On-chain Operations
             </CardTitle>
             <CardDescription>
@@ -133,21 +133,24 @@ export const OperationsConsole: React.FC = () => {
             </CardDescription>
           </div>
           <div className="flex flex-wrap gap-1.5">
+            {status.canTransact && roles.loaded && <>
             <RoleChip label="Attester" held={roles.attester} />
             <RoleChip label="Funder" held={roles.funder} />
             <RoleChip label="Reviewer" held={roles.reviewer} />
             <RoleChip label="Recovery officer" held={roles.recoveryOfficer} />
+            </>}
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
         <OnChainNotice action="run reviewer operations" />
+        {status.canTransact && !roles.loaded && <p role="status" className="text-sm text-muted">{roles.error ? 'Permissions could not be checked. Actions remain unavailable.' : 'Checking permissions…'}</p>}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Attestation */}
           <section aria-labelledby="ops-attest" className="space-y-3">
-            <h3 id="ops-attest" className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <BadgeCheck className="w-4 h-4 text-blue-500" /> Publish score attestation
+            <h3 id="ops-attest" className="text-sm font-semibold text-foreground dark:text-foreground flex items-center gap-2">
+              <BadgeCheck className="w-4 h-4 text-accent" /> Publish score attestation
             </h3>
             <form onSubmit={attest} className="space-y-3">
               <Input label="Borrower wallet" placeholder="0x…" value={borrower} onChange={(e) => setBorrower(e.target.value.trim())} required />
@@ -171,25 +174,25 @@ export const OperationsConsole: React.FC = () => {
 
           {/* Loan operations */}
           <section aria-labelledby="ops-loans" className="space-y-3">
-            <h3 id="ops-loans" className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <h3 id="ops-loans" className="text-sm font-semibold text-foreground dark:text-foreground flex items-center gap-2">
               <Landmark className="w-4 h-4 text-emerald-500" /> Loan operations
             </h3>
             <Input label="Loan id" inputMode="numeric" placeholder="e.g. 1" value={loanIdInput} onChange={(e) => setLoanIdInput(e.target.value.trim())} />
             {lookupId !== undefined && (
               lookup.loan && lookupStatus ? (
                 <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-xs font-mono">
-                    <span className="text-slate-500 font-sans">Status</span>
+                  <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-surface dark:bg-subtle text-xs font-mono">
+                    <span className="text-muted font-sans">Status</span>
                     <span>{lookupStatus}</span>
-                    <span className="text-slate-500 font-sans">Borrower</span>
+                    <span className="text-muted font-sans">Borrower</span>
                     <span title={lookup.loan.borrower}>{truncateAddress(lookup.loan.borrower)}</span>
-                    <span className="text-slate-500 font-sans">Principal</span>
+                    <span className="text-muted font-sans">Principal</span>
                     <span>{formatUsdcExact(lookup.loan.principal)}</span>
-                    <span className="text-slate-500 font-sans">Outstanding</span>
+                    <span className="text-muted font-sans">Outstanding</span>
                     <span>{formatUsdcExact(lookup.outstanding)}</span>
-                    <span className="text-slate-500 font-sans">Past due</span>
+                    <span className="text-muted font-sans">Past due</span>
                     <span className={lookup.amountPastDue > 0n ? 'text-rose-600' : ''}>{formatUsdcExact(lookup.amountPastDue)}</span>
-                    <span className="text-slate-500 font-sans">Final due</span>
+                    <span className="text-muted font-sans">Final due</span>
                     <span>{formatTimestamp(lookup.loan.finalDueAt)}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -216,7 +219,7 @@ export const OperationsConsole: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-slate-500">No loan with id {loanIdInput} on {networkLabel}.</p>
+                <p className="text-xs text-muted">No loan with id {loanIdInput} on {networkLabel}.</p>
               )
             )}
           </section>
@@ -224,32 +227,32 @@ export const OperationsConsole: React.FC = () => {
 
         {/* Disputes */}
         <section aria-labelledby="ops-disputes" className="space-y-3">
-          <h3 id="ops-disputes" className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Gavel className="w-4 h-4 text-indigo-500" /> On-chain disputes
+          <h3 id="ops-disputes" className="text-sm font-semibold text-foreground dark:text-foreground flex items-center gap-2">
+            <Gavel className="w-4 h-4 text-accent" /> On-chain disputes
           </h3>
           {disputes.length === 0 ? (
-            <p className="text-xs text-slate-500">No disputes have been opened on-chain.</p>
+            <p className="text-xs text-muted">No disputes have been opened on-chain.</p>
           ) : (
             <ul className="space-y-2">
               {disputes.map((dispute) => {
                 const key = dispute.id.toString()
                 const statusName = DISPUTE_STATUS[dispute.status]
                 return (
-                  <li key={key} className="rounded-xl border border-slate-200 dark:border-slate-800 p-3 space-y-2 text-xs">
+                  <li key={key} className="rounded-xl border border-line dark:border-line p-3 space-y-2 text-xs">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="font-mono font-semibold">Dispute #{key}</span>
                       <Badge variant={statusName === 'Open' ? 'warning' : statusName === 'Upheld' ? 'success' : 'default'} size="sm">
                         {statusName}
                       </Badge>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 font-mono text-slate-600 dark:text-slate-300">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 font-mono text-muted dark:text-muted">
                       <span title={dispute.borrower}>Borrower {truncateAddress(dispute.borrower)}</span>
                       <span title={dispute.assessmentId}>Assessment {truncateAddress(dispute.assessmentId, 6)}</span>
                       <span>Opened {formatTimestamp(dispute.openedAt)}</span>
                     </div>
                     {statusName === 'Open' && (
                       <div className="space-y-2">
-                        <label htmlFor={`dispute-notes-${key}`} className="block text-[11px] text-slate-500">
+                        <label htmlFor={`dispute-notes-${key}`} className="block text-xs text-muted">
                           Resolution notes (required; the hash is recorded on-chain)
                         </label>
                         <textarea
@@ -278,18 +281,18 @@ export const OperationsConsole: React.FC = () => {
 
         {/* Recovery */}
         <section aria-labelledby="ops-recovery" className="space-y-3">
-          <h3 id="ops-recovery" className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+          <h3 id="ops-recovery" className="text-sm font-semibold text-foreground dark:text-foreground flex items-center gap-2">
             <LifeBuoy className="w-4 h-4 text-amber-500" /> Recovery requests
           </h3>
           {recoveries.length === 0 ? (
-            <p className="text-xs text-slate-500">No restructuring requests have been submitted on-chain.</p>
+            <p className="text-xs text-muted">No restructuring requests have been submitted on-chain.</p>
           ) : (
             <ul className="space-y-2">
               {recoveries.map((request) => {
                 const key = request.id.toString()
                 const statusName = RECOVERY_STATUS[request.status]
                 return (
-                  <li key={key} className="rounded-xl border border-slate-200 dark:border-slate-800 p-3 space-y-2 text-xs">
+                  <li key={key} className="rounded-xl border border-line dark:border-line p-3 space-y-2 text-xs">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="font-mono font-semibold">
                         Request #{key} · Loan #{request.loanId.toString()}
@@ -298,7 +301,7 @@ export const OperationsConsole: React.FC = () => {
                         {statusName}
                       </Badge>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 font-mono text-slate-600 dark:text-slate-300">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 font-mono text-muted dark:text-muted">
                       <span title={request.borrower}>Borrower {truncateAddress(request.borrower)}</span>
                       <span>Proposed {formatUsdcExact(request.proposedOutstanding)}</span>
                       <span>By {formatTimestamp(request.proposedFinalDueAt)}</span>
@@ -315,7 +318,7 @@ export const OperationsConsole: React.FC = () => {
                             onChange={(e) => setMilestoneCounts((current) => ({ ...current, [key]: e.target.value }))}
                           />
                           <div className="sm:col-span-2 space-y-1">
-                            <label htmlFor={`recovery-notes-${key}`} className="block text-[11px] text-slate-500">
+                            <label htmlFor={`recovery-notes-${key}`} className="block text-xs text-muted">
                               Decision notes (required; hash recorded)
                             </label>
                             <textarea

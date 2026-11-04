@@ -62,12 +62,12 @@ export const TransactionToast: React.FC = () => {
       role="status"
       aria-live="polite"
       className={cn(
-        'fixed bottom-4 right-4 z-50 w-[calc(100%-2rem)] max-w-sm rounded-2xl border bg-white p-4 shadow-2xl dark:bg-slate-900',
+        'fixed bottom-4 right-4 z-50 w-[calc(100%-2rem)] max-w-sm rounded-xl border bg-surface p-4 shadow-2xl dark:bg-surface',
         failed
           ? 'border-rose-200 dark:border-rose-900/70'
           : confirmed
             ? 'border-emerald-200 dark:border-emerald-900/70'
-            : 'border-slate-200 dark:border-slate-800',
+            : 'border-line dark:border-line',
       )}
     >
       <div className="flex items-start gap-3">
@@ -77,13 +77,13 @@ export const TransactionToast: React.FC = () => {
           ) : confirmed ? (
             <CheckCircle2 className="w-5 h-5 text-emerald-500" />
           ) : (
-            <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+            <Loader2 className="w-5 h-5 text-accent animate-spin" />
           )}
         </div>
         <div className="min-w-0 flex-1 space-y-2">
           <div>
-            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{activeTx.title}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-sm font-semibold text-foreground dark:text-foreground">{activeTx.title}</p>
+            <p className="text-xs text-muted dark:text-muted">
               {failed
                 ? `${FAILURE_LABELS[activeTx.failureKind ?? 'error']}: ${activeTx.error ?? 'The transaction did not complete.'}`
                 : confirmed
@@ -91,7 +91,7 @@ export const TransactionToast: React.FC = () => {
                   : PHASE_HINTS[activeTx.state as keyof typeof PHASE_HINTS]}
             </p>
             {!failed && !confirmed && activeTx.description && (
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+              <p className="text-xs text-muted dark:text-muted mt-0.5">
                 {activeTx.stepCount && activeTx.stepCount > 1
                   ? `Step ${(activeTx.stepIndex ?? 0) + 1} of ${activeTx.stepCount}: `
                   : ''}
@@ -110,10 +110,10 @@ export const TransactionToast: React.FC = () => {
                   key={phase.id}
                   aria-current={index === currentIndex ? 'step' : undefined}
                   className={cn(
-                    'rounded-md px-1 py-1 text-center text-[10px] font-semibold',
-                    reached && 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300',
+                    'rounded-md px-1 py-1 text-center text-xs font-semibold',
+                    reached && 'bg-brand-soft text-accent dark:bg-brand-soft dark:text-accent',
                     confirmed && index === 3 && 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300',
-                    !reached && !isFailurePoint && 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500',
+                    !reached && !isFailurePoint && 'bg-surface text-muted dark:bg-subtle dark:text-muted',
                     isFailurePoint && 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300',
                   )}
                 >
@@ -124,25 +124,25 @@ export const TransactionToast: React.FC = () => {
           </ol>
 
           {activeTx.hash && (
-            <div className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 dark:bg-slate-800/70 px-2.5 py-1.5 text-[11px] font-mono">
-              <span className="text-slate-600 dark:text-slate-300" title={activeTx.hash}>
+            <div className="flex items-center justify-between gap-2 rounded-lg bg-surface dark:bg-subtle px-2.5 py-1.5 text-xs font-mono">
+              <span className="text-muted dark:text-muted" title={activeTx.hash}>
                 {truncateAddress(activeTx.hash, 8)}
               </span>
               <span className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={copyHash}
-                  className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 cursor-pointer"
+                  className="text-muted hover:text-foreground dark:hover:text-muted cursor-pointer"
                   aria-label="Copy transaction hash"
                 >
                   {copied ? 'Copied' : <Copy className="w-3.5 h-3.5" />}
                 </button>
                 {explorer ? (
-                  <a href={explorer} target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400" aria-label="Open in block explorer">
+                  <a href={explorer} target="_blank" rel="noreferrer" className="text-accent dark:text-accent" aria-label="Open in block explorer">
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 ) : (
-                  <span className="font-sans text-slate-400">{networkLabel}</span>
+                  <span className="font-sans text-muted">{networkLabel}</span>
                 )}
               </span>
             </div>
@@ -152,7 +152,7 @@ export const TransactionToast: React.FC = () => {
           type="button"
           onClick={() => setTransactionStatus(null)}
           aria-label="Dismiss transaction status"
-          className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 cursor-pointer"
+          className="rounded-lg p-1 text-muted hover:bg-surface hover:text-foreground dark:hover:bg-subtle dark:hover:text-muted cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>

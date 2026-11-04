@@ -90,7 +90,7 @@ export const OnChainLoanCard: React.FC<{ onRequestLoan: () => void }> = ({ onReq
         <div className="flex items-center justify-between gap-2">
           <div>
             <CardTitle className="text-base flex items-center gap-2">
-              <Coins className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <Coins className="w-4 h-4 text-accent dark:text-accent" />
               On-chain Loan Facility
             </CardTitle>
             <CardDescription>Read live from LoanManager on {networkLabel}</CardDescription>
@@ -111,35 +111,35 @@ export const OnChainLoanCard: React.FC<{ onRequestLoan: () => void }> = ({ onReq
         {status.canRead && (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                <span className="block text-slate-500">Identity</span>
+              <div className="p-3 rounded-xl bg-surface dark:bg-subtle">
+                <span className="block text-muted">Identity</span>
                 <span className={`font-semibold ${borrower.registered ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                   {borrower.registered ? 'Registered' : 'Not registered'}
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                <span className="block text-slate-500">Attested score</span>
-                <span className="font-semibold font-mono text-slate-900 dark:text-slate-100">{scoreLabel}</span>
-                <span className={`ml-1 ${borrower.scoreValid ? 'text-emerald-600' : 'text-slate-400'}`}>
+              <div className="p-3 rounded-xl bg-surface dark:bg-subtle">
+                <span className="block text-muted">Attested score</span>
+                <span className="font-semibold font-mono text-foreground dark:text-foreground">{scoreLabel}</span>
+                <span className={`ml-1 ${borrower.scoreValid ? 'text-emerald-600' : 'text-muted'}`}>
                   {borrower.scoreValid ? 'valid' : borrower.scoreBps > 0 ? 'invalid' : 'none'}
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                <span className="block text-slate-500">Eligible limit</span>
-                <span className="font-semibold font-mono text-slate-900 dark:text-slate-100">
+              <div className="p-3 rounded-xl bg-surface dark:bg-subtle">
+                <span className="block text-muted">Eligible limit</span>
+                <span className="font-semibold font-mono text-foreground dark:text-foreground">
                   {formatUsdcExact(borrower.eligibleLimit)}
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                <span className="block text-slate-500">Wallet</span>
-                <span className="font-semibold font-mono text-slate-900 dark:text-slate-100">
+              <div className="p-3 rounded-xl bg-surface dark:bg-subtle">
+                <span className="block text-muted">Wallet</span>
+                <span className="font-semibold font-mono text-foreground dark:text-foreground">
                   {formatUsdcExact(borrower.walletBalance)}
                 </span>
                 <button
                   type="button"
                   disabled={disabled}
                   onClick={() => confirmWith('Claim test mUSDC', steps.claimFaucet(), '1,000 test mUSDC minted to your wallet.')}
-                  className="mt-1 flex items-center gap-1 text-[11px] text-blue-600 dark:text-blue-400 disabled:opacity-50 cursor-pointer"
+                  className="mt-1 flex items-center gap-1 text-xs text-accent dark:text-accent disabled:opacity-50 cursor-pointer"
                 >
                   <Droplets className="w-3 h-3" /> Get test mUSDC
                 </button>
@@ -148,8 +148,8 @@ export const OnChainLoanCard: React.FC<{ onRequestLoan: () => void }> = ({ onReq
 
             {!loan ? (
               <div className="py-8 text-center space-y-3">
-                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">No open on-chain loan</p>
-                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                <p className="text-sm font-semibold text-foreground dark:text-foreground">No open on-chain loan</p>
+                <p className="text-xs text-muted max-w-md mx-auto">
                   {borrower.registered
                     ? borrower.scoreValid
                       ? 'You are eligible to request a loan from the LendingPool.'
@@ -162,36 +162,36 @@ export const OnChainLoanCard: React.FC<{ onRequestLoan: () => void }> = ({ onReq
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 text-xs font-mono">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-surface dark:bg-subtle border border-line dark:border-line text-xs font-mono">
                   <div>
-                    <span className="block text-slate-500 font-sans">Loan</span>#{loanId.toString()}
+                    <span className="block text-muted font-sans">Loan</span>#{loanId.toString()}
                   </div>
                   <div>
-                    <span className="block text-slate-500 font-sans">Principal</span>
+                    <span className="block text-muted font-sans">Principal</span>
                     {formatUsdcExact(loan.principal)}
                   </div>
                   <div>
-                    <span className="block text-slate-500 font-sans">Interest ({loan.annualRateBps / 100}% APR)</span>
+                    <span className="block text-muted font-sans">Interest ({loan.annualRateBps / 100}% APR)</span>
                     {formatUsdcExact(loan.interest)}
                   </div>
                   <div>
-                    <span className="block text-slate-500 font-sans">Outstanding</span>
-                    <span className="font-bold text-blue-600 dark:text-blue-400">{formatUsdcExact(borrower.outstanding)}</span>
+                    <span className="block text-muted font-sans">Outstanding</span>
+                    <span className="font-bold text-accent dark:text-accent">{formatUsdcExact(borrower.outstanding)}</span>
                   </div>
                   <div>
-                    <span className="block text-slate-500 font-sans">Repaid</span>
+                    <span className="block text-muted font-sans">Repaid</span>
                     {formatUsdcExact(loan.principalRepaid + loan.interestRepaid)}
                   </div>
                   <div>
-                    <span className="block text-slate-500 font-sans">Installments</span>
+                    <span className="block text-muted font-sans">Installments</span>
                     {loan.installmentCount} × 30 days
                   </div>
                   <div>
-                    <span className="block text-slate-500 font-sans">Final due</span>
+                    <span className="block text-muted font-sans">Final due</span>
                     {formatTimestamp(loan.finalDueAt)}
                   </div>
                   <div>
-                    <span className="block text-slate-500 font-sans">Past due</span>
+                    <span className="block text-muted font-sans">Past due</span>
                     <span className={borrower.amountPastDue > 0n ? 'text-rose-600 dark:text-rose-400 font-bold' : ''}>
                       {formatUsdcExact(borrower.amountPastDue)}
                     </span>
@@ -207,7 +207,7 @@ export const OnChainLoanCard: React.FC<{ onRequestLoan: () => void }> = ({ onReq
                 )}
 
                 {borrower.nextPayment && borrower.nextPayment[2] > 0n && (
-                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                  <p className="text-xs text-muted dark:text-muted">
                     {borrower.nextPayment[0] > 0
                       ? `Next: installment #${borrower.nextPayment[0]} due ${formatTimestamp(borrower.nextPayment[1])} — ${formatUsdcExact(borrower.nextPayment[2])}`
                       : `Restructured: ${formatUsdcExact(borrower.nextPayment[2])} due by ${formatTimestamp(borrower.nextPayment[1])}`}
@@ -215,7 +215,7 @@ export const OnChainLoanCard: React.FC<{ onRequestLoan: () => void }> = ({ onReq
                 )}
 
                 {borrower.openRecoveryRequestId > 0n && (
-                  <p className="text-xs text-indigo-700 dark:text-indigo-300 flex items-start gap-2">
+                  <p className="text-xs text-accent dark:text-accent flex items-start gap-2">
                     <LifeBuoy className="w-4 h-4 shrink-0" />
                     Recovery request #{borrower.openRecoveryRequestId.toString()} is open. A recovery officer reviews it in
                     the Reviewer Desk.
@@ -279,7 +279,7 @@ export const OnChainLoanCard: React.FC<{ onRequestLoan: () => void }> = ({ onReq
         description="Propose a new final due date for the full outstanding balance. A recovery officer approves a milestone plan."
       >
         <form onSubmit={submitRecovery} className="space-y-4">
-          <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 text-xs font-mono">
+          <div className="p-3 rounded-lg bg-surface dark:bg-subtle text-xs font-mono">
             Outstanding to cover: {formatUsdcExact(borrower.outstanding)}
           </div>
           <Input
@@ -293,7 +293,7 @@ export const OnChainLoanCard: React.FC<{ onRequestLoan: () => void }> = ({ onReq
             required
           />
           <div className="space-y-1.5">
-            <label htmlFor="recovery-reason" className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+            <label htmlFor="recovery-reason" className="block text-xs font-medium text-foreground dark:text-foreground">
               Reason (stored off-chain; only its hash is written on-chain)
             </label>
             <textarea
@@ -302,7 +302,7 @@ export const OnChainLoanCard: React.FC<{ onRequestLoan: () => void }> = ({ onReq
               rows={3}
               value={recoveryReason}
               onChange={(e) => setRecoveryReason(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 bg-white p-3 text-xs text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              className="w-full rounded-lg border border-line bg-surface p-3 text-xs text-foreground focus:border-line focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-line dark:bg-surface dark:text-muted"
             />
           </div>
           <div className="flex justify-end gap-2">

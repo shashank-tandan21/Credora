@@ -24,15 +24,15 @@ export const Badge: React.FC<BadgeProps> = ({
   const baseStyles = 'inline-flex items-center font-medium rounded-full select-none'
 
   const sizeStyles = {
-    sm: 'text-[10px] px-2 py-0.5 leading-tight',
+    sm: 'text-xs px-2 py-0.5 leading-tight',
     md: 'text-xs px-2.5 py-0.5 leading-tight',
   }
 
   const variantStyles = {
     default:
-      'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700',
+      'bg-surface text-foreground dark:bg-subtle dark:text-muted border border-line dark:border-line',
     secondary:
-      'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-300',
+      'bg-surface text-foreground dark:bg-subtle dark:text-muted',
     success:
       'bg-emerald-50 text-emerald-700 border border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50',
     warning:
@@ -40,9 +40,9 @@ export const Badge: React.FC<BadgeProps> = ({
     destructive:
       'bg-rose-50 text-rose-700 border border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/50',
     outline:
-      'border border-slate-300 text-slate-700 dark:border-slate-700 dark:text-slate-300',
+      'border border-line text-foreground dark:border-line dark:text-muted',
     indigo:
-      'bg-indigo-50 text-indigo-700 border border-indigo-200/60 dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-800/50',
+      'bg-brand-soft text-accent border border-line dark:bg-brand-soft dark:text-accent dark:border-line',
   }
 
   return (
@@ -67,14 +67,14 @@ export const RiskBadge: React.FC<{ category: RiskCategory; size?: 'sm' | 'md' }>
     case 'Good':
       return (
         <Badge variant="indigo" size={size}>
-          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-1.5 inline-block" />
+          <span className="w-1.5 h-1.5 rounded-full bg-brand mr-1.5 inline-block" />
           Good Tier
         </Badge>
       )
     case 'Fair':
       return (
         <Badge variant="default" size={size}>
-          <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5 inline-block" />
+          <span className="w-1.5 h-1.5 rounded-full bg-subtle mr-1.5 inline-block" />
           Fair Tier
         </Badge>
       )
