@@ -1,3 +1,4 @@
+import { formatEther } from 'viem'
 import type { Abi, Address, Hex, TransactionReceipt } from 'viem'
 import { getConnection, getPublicClient, simulateContract, writeContract } from 'wagmi/actions'
 import { receiptTimeoutMs, requiredConfirmations, targetChain, wagmiConfig } from './config'
@@ -21,12 +22,17 @@ export interface StepProgress {
   stepIndex: number
   stepCount: number
   hash?: Hex
+  sender?: Address
+  recipient?: Address
 }
 
 export interface ConfirmedStep {
   label: string
   hash: Hex
   receipt: TransactionReceipt
+  gasCost: string
+  gasUsed: bigint
+  gasPrice: bigint
 }
 
 /**
@@ -78,11 +84,11 @@ export async function executeSteps(
       args: step.args,
       chainId: targetChain.id,
     })
-    onProgress({ ...base, phase: 'prepared' })
+    onProgress({ ...base, phase: 'prepared', sender: account, recipient: step.address })
 
     const hash = await writeContract(wagmiConfig, request)
-    onProgress({ ...base, phase: 'submitted', hash })
-    onProgress({ ...base, phase: 'pending', hash })
+    onProgress({ ...base, phase: 'submitted', hash, sender: account, recipient: step.address })
+    onProgress({ ...base, phase: 'pending', hash, sender: account, recipient: step.address })
 
     let replacement: { reason: 'cancelled' | 'replaced' | 'repriced'; hash: Hex } | undefined
     let receipt: TransactionReceipt
@@ -94,7 +100,7 @@ export async function executeSteps(
         onReplaced: (replaced) => {
           replacement = { reason: replaced.reason, hash: replaced.transaction.hash }
           if (replaced.reason === 'repriced') {
-            onProgress({ ...base, phase: 'pending', hash: replaced.transaction.hash })
+            onProgress({ ...base, phase: 'pending', hash: replaced.transaction.hash, sender: account, recipient: step.address })
           }
         },
       })
@@ -124,8 +130,11 @@ export async function executeSteps(
     if (receipt.to?.toLowerCase() !== step.address.toLowerCase()) {
       throw new TransactionFlowError('error', 'The receipt does not belong to the expected contract.', receipt.transactionHash)
     }
-    confirmed.push({ label: step.label, hash: receipt.transactionHash, receipt })
-    onProgress({ ...base, phase: 'step-confirmed', hash: receipt.transactionHash })
+    const gasUsed = receipt.gasUsed
+    const gasPrice = receipt.effectiveGasPrice
+    const gasCost = formatEther(gasUsed * gasPrice)
+    confirmed.push({ label: step.label, hash: receipt.transactionHash, receipt, gasCost, gasUsed, gasPrice })
+    onProgress({ ...base, phase: 'step-confirmed', hash: receipt.transactionHash, sender: account, recipient: step.address })
   }
   return confirmed
 }

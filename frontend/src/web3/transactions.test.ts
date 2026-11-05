@@ -34,7 +34,15 @@ function depositStep(overrides: Partial<ContractStep> = {}): ContractStep {
 }
 
 function receipt(overrides: Record<string, unknown> = {}) {
-  return { status: 'success', to: pool.address.toLowerCase(), transactionHash: HASH, logs: [], ...overrides }
+  return {
+    status: 'success',
+    to: pool.address.toLowerCase(),
+    transactionHash: HASH,
+    logs: [],
+    gasUsed: 21_000n,
+    effectiveGasPrice: 1_000_000_000n,
+    ...overrides,
+  }
 }
 
 async function run(steps: ContractStep[]) {
@@ -60,6 +68,9 @@ describe('executeSteps', () => {
     expect(progress[1].hash).toBe(HASH)
     expect(result).toHaveLength(1)
     expect(result[0].hash).toBe(HASH)
+    expect(result[0].gasCost).toBe('0.000021')
+    expect(result[0].gasUsed).toBe(21_000n)
+    expect(result[0].gasPrice).toBe(1_000_000_000n)
     expect(wallet.waitForTransactionReceipt).toHaveBeenCalledWith(
       expect.objectContaining({ hash: HASH, confirmations: 1, timeout: 180_000 }),
     )

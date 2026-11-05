@@ -241,6 +241,14 @@ class DemoRepository(BaseRepository):
     def list_loans(self, wallet_address: str) -> list[DemoLoan]:
         return list(reversed(self.store.loans_by_wallet.get(wallet_address, [])))
 
+    def list_open_loans(self) -> list[DemoLoan]:
+        return [
+            loan
+            for loans in self.store.loans_by_wallet.values()
+            for loan in loans
+            if loan.status == "requested"
+        ]
+
     def save_loan(self, wallet_address: str, loan: DemoLoan) -> DemoLoan:
         self.store.loans_by_wallet.setdefault(wallet_address, []).append(loan)
         return loan

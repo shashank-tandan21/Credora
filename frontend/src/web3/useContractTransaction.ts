@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
 import type { Hex } from 'viem'
+import { formatEther, formatGwei } from 'viem'
 import { useAuth } from '../contexts/AuthContext'
 import { networkLabel } from './config'
 import { describeTransactionError } from './errors'
@@ -34,6 +35,8 @@ export function useContractTransaction() {
             title,
             description: progress.label,
             hash: progress.hash,
+            sender: progress.sender,
+            recipient: progress.recipient,
             stepIndex: progress.stepIndex,
             stepCount: progress.stepCount,
           })
@@ -48,6 +51,13 @@ export function useContractTransaction() {
               : `${confirmed.length} transactions confirmed on ${networkLabel}.`,
           hash: final?.hash,
           hashes: confirmed.map((step) => step.hash),
+          sender: final?.receipt.from,
+          recipient: final?.receipt.to ?? undefined,
+          gasCost: confirmed.length > 1
+            ? formatEther(confirmed.reduce((total, step) => total + step.gasUsed * step.gasPrice, 0n))
+            : final?.gasCost,
+          gasUsed: confirmed.reduce((total, step) => total + step.gasUsed, 0n).toString(),
+          gasPrice: final ? formatGwei(final.gasPrice) : undefined,
         })
         return confirmed
       } catch (error) {

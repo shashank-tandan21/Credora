@@ -71,6 +71,11 @@ transaction panel (bottom right):
 | `confirmed` | Receipt has status `success`, on the target chain, from the expected contract. Only now is success shown. |
 | `failed` | Rejected in wallet, reverted (custom error decoded to a readable message), timed out, replaced or cancelled, wrong network, or not configured. |
 
+The transaction panel also shows the wallet sender, the contract recipient, the
+transaction hash, gas used, gas price in gwei, and the actual gas fee paid in ETH
+once the receipt is confirmed. Multi-step actions show the combined fee for all
+confirmed transactions.
+
 - **Wrong network**: actions are blocked and the header offers a switch to the target chain.
 - **Replaced transactions**: a sped-up (repriced) transaction is followed to its replacement; a cancelled or replaced one is reported as failed even if the replacement succeeded.
 - **Timeouts**: after `VITE_TX_TIMEOUT_MS` the hash is still shown so it can be checked before retrying.

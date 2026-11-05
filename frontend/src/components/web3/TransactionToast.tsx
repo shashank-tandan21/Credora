@@ -147,6 +147,40 @@ export const TransactionToast: React.FC = () => {
               </span>
             </div>
           )}
+          {(activeTx.sender || activeTx.recipient || activeTx.gasCost) && (
+            <dl className="grid grid-cols-2 gap-x-3 gap-y-1 rounded-lg border border-line bg-surface px-2.5 py-2 text-xs dark:border-line dark:bg-subtle">
+              {activeTx.sender && (
+                <>
+                  <dt className="font-sans text-muted">Sender</dt>
+                  <dd className="truncate text-right font-mono" title={activeTx.sender}>{truncateAddress(activeTx.sender, 7)}</dd>
+                </>
+              )}
+              {activeTx.recipient && (
+                <>
+                  <dt className="font-sans text-muted">Recipient / contract</dt>
+                  <dd className="truncate text-right font-mono" title={activeTx.recipient}>{truncateAddress(activeTx.recipient, 7)}</dd>
+                </>
+              )}
+              {activeTx.gasCost && (
+                <>
+                  <dt className="font-sans text-muted">Gas fee paid</dt>
+                  <dd className="text-right font-mono">{activeTx.gasCost} ETH</dd>
+                </>
+              )}
+              {activeTx.gasUsed && (
+                <>
+                  <dt className="font-sans text-muted">Gas used</dt>
+                  <dd className="text-right font-mono">{activeTx.gasUsed}</dd>
+                </>
+              )}
+              {activeTx.gasPrice && (
+                <>
+                  <dt className="font-sans text-muted">Gas price</dt>
+                  <dd className="text-right font-mono">{activeTx.gasPrice} gwei</dd>
+                </>
+              )}
+            </dl>
+          )}
         </div>
         <button
           type="button"

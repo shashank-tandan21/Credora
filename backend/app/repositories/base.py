@@ -59,6 +59,10 @@ class BaseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def list_open_loans(self) -> list[object]:
+        raise NotImplementedError
+
+    @abstractmethod
     def save_loan(self, wallet_address: str, loan: object) -> object:
         raise NotImplementedError
 

@@ -66,26 +66,30 @@ export const WalletControl: React.FC = () => {
           href="https://metamask.io/download/"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-line dark:border-line text-xs font-medium text-foreground dark:text-foreground hover:bg-surface dark:hover:bg-subtle"
+          className="flex items-center gap-2 rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-100 dark:border-rose-800/70 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-950/70"
+          title="No browser wallet detected."
         >
+          <span className="h-2 w-2 rounded-full bg-rose-500" aria-hidden="true" />
           <PlugZap className="w-3.5 h-3.5" aria-hidden="true" />
-          <span className="hidden sm:inline">Install a wallet</span>
+          <span className="hidden sm:inline">Wallet not connected · Install</span>
           <span className="sm:hidden">Wallet</span>
         </a>
       )
     }
     return (
-      <Button
-        size="sm"
+      <button
+        type="button"
         onClick={actions.connect}
-        isLoading={actions.isConnecting}
-        leftIcon={<Wallet className="w-3.5 h-3.5" />}
+        disabled={actions.isConnecting}
         aria-label="Connect Wallet"
+        title="MetaMask is not connected. Click to connect."
+        className="flex items-center gap-2 rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-wait disabled:opacity-70 dark:border-rose-800/70 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-950/70"
       >
-        <span className="hidden sm:inline">Wallet not connected · </span>
-        <span className="hidden sm:inline">Connect Wallet</span>
-        <span className="sm:hidden">Connect</span>
-      </Button>
+        <span className="h-2 w-2 rounded-full bg-rose-500" aria-hidden="true" />
+        <Wallet className="h-3.5 w-3.5" aria-hidden="true" />
+        <span className="hidden sm:inline">{actions.isConnecting ? 'Connecting…' : 'MetaMask not connected'}</span>
+        <span className="sm:hidden">{actions.isConnecting ? 'Wait…' : 'Connect'}</span>
+      </button>
     )
   }
 
@@ -111,9 +115,9 @@ export const WalletControl: React.FC = () => {
       {/* On phones the address collapses into the disconnect button's tooltip. */}
       <div
         title={status.address}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/60 dark:bg-emerald-950/30 text-xs font-mono"
+        className="flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-mono dark:border-emerald-900/60 dark:bg-emerald-950/30"
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+        <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.15)]" aria-hidden="true" />
         <span className="hidden sm:inline font-sans font-semibold text-emerald-700 dark:text-emerald-300">Connected</span>
         <span className="text-foreground dark:text-foreground">{truncateAddress(status.address)}</span>
       </div>

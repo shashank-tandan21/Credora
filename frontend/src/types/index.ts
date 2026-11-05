@@ -145,6 +145,11 @@ export type TransactionFailureKind =
 export interface TransactionStatus {
   hash?: string
   hashes?: string[]
+  sender?: string
+  recipient?: string
+  gasCost?: string
+  gasUsed?: string
+  gasPrice?: string
   state: 'idle' | TransactionPhase
   title: string
   description?: string
@@ -167,4 +172,3 @@ export interface ChainConfig {
   confirmations: number
   contracts: Record<string, string | null>
 }
-

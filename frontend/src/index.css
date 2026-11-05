@@ -17,10 +17,10 @@
 }
 :root {
   color-scheme: light;
-  --canvas: #f6f5f0; --surface: #fff; --subtle: #eeefe9;
+  --canvas: #e8f6ff; --surface: #ffffff; --subtle: #d9f0fc;
   --foreground: #202823; --muted: #59665e; --line: #d9ded7; --control: #7a887d;
   --brand: #245c4f; --brand-hover: #1a463c; --on-brand: #fff;
-  --brand-soft: #e6eee8; --accent: #245c4f;
+  --brand-soft: #e1f3fc; --accent: #245c4f;
 }
 html.dark {
   color-scheme: dark;
@@ -29,6 +29,8 @@ html.dark {
   --brand: #a9c6b3; --brand-hover: #bed4c5; --on-brand: #142b20;
   --brand-soft: #2c4033; --accent: #b7d5c1;
 }
+html.dark .app-shell { background: radial-gradient(circle at 85% 0%, #2c403366, transparent 34rem), var(--canvas); }
+html.dark .site-header { background: #141b18f2; border-bottom-color: var(--line); }
 @layer base {
   html { scroll-behavior: smooth; scroll-padding-top: 6rem; background: var(--canvas); scrollbar-gutter: stable; }
   body { margin: 0; min-width: 320px; font-family: var(--font-sans); background: var(--canvas); color: var(--foreground); line-height: 1.5; -webkit-font-smoothing: antialiased; }
@@ -47,9 +49,9 @@ html.dark {
   ::selection { background: var(--brand-soft); color: var(--foreground); }
 }
 @layer components {
-  .app-shell { min-height: 100dvh; display: flex; flex-direction: column; }
+  .app-shell { min-height: 100dvh; display: flex; flex-direction: column; background: radial-gradient(circle at 85% 0%, #ffffffaa, transparent 34rem), linear-gradient(135deg, #e8f6ff 0%, #d9f0fc 48%, #eefaff 100%); }
   .app-main { width: 100%; max-width: 1184px; margin-inline: auto; padding: 32px; flex: 1; min-width: 0; }
-  .site-header { position: sticky; top: 0; z-index: 40; background: var(--canvas); border-bottom: 1px solid var(--line); }
+  .site-header { position: sticky; top: 0; z-index: 40; background: #e8f6fff2; backdrop-filter: blur(14px); border-bottom: 1px solid #b9ddec; }
   .header-inner { min-height: 76px; max-width: 1280px; padding: 12px 32px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
   .header-controls { display: flex; align-items: center; gap: 10px; }
   .wordmark { display: inline-flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; letter-spacing: -.04em; flex-shrink: 0; min-height: 44px; }

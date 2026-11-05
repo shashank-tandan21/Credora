@@ -79,6 +79,10 @@ class LoanService:
             for loan in loans
         ]
 
+    async def list_open_loans(self) -> list[LoanRequestResponse]:
+        loans = await repository_call(get_repository().list_open_loans)
+        return [self._loan_response(loan, 0, loan.wallet_address) for loan in loans]
+
     async def pool_statistics(self) -> PoolStatisticsResponse:
         if not get_settings().demo_mode:
             result = await repository_call(get_repository().pool_statistics)

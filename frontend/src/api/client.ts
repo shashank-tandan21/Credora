@@ -409,6 +409,18 @@ class ApiClient {
     }
   }
 
+  async getPoolLoanRequests(): Promise<LoanRequest[]> {
+    try {
+      return await this.request<LoanRequest[]>('/pool/loan-requests')
+    } catch (err: unknown) {
+      const error = err as Error
+      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
+        return mockStore.getAllOpenLoans()
+      }
+      throw error
+    }
+  }
+
   async getLenderPosition(): Promise<LenderPosition> {
     return mockStore.getLenderPosition(this.demoWallet)
   }
@@ -524,7 +536,7 @@ class InBrowserDemoStore {
       interest_amount: 17.75,
       total_repayment: 617.75,
       duration_days: 90,
-      status: 'active',
+      status: 'requested',
       created_at: new Date(Date.now() - 20 * 86400000).toISOString(),
       installments: [
         {
@@ -724,7 +736,7 @@ class InBrowserDemoStore {
       ...quote,
       id: `ln-${Date.now().toString(36)}`,
       wallet_address: wallet,
-      status: 'active',
+      status: 'requested',
       created_at: new Date().toISOString(),
     }
     const current = this.loans.get(wallet) || []
@@ -747,6 +759,10 @@ class InBrowserDemoStore {
 
   getLoans(wallet: string): LoanRequest[] {
     return this.loans.get(wallet) || []
+  }
+
+  getAllOpenLoans(): LoanRequest[] {
+    return [...this.loans.values()].flat().filter((loan) => loan.status === 'requested')
   }
 
   getPoolStats(): PoolStatistics {

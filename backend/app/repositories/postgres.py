@@ -177,6 +177,15 @@ class PostgresRepository(BaseRepository):
             )
             return list(result.all())
 
+    async def list_open_loans(self) -> list[Loan]:
+        async with self.session_factory() as session:
+            result = await session.scalars(
+                select(Loan)
+                .where(Loan.status == "requested")
+                .order_by(Loan.created_at.desc())
+            )
+            return list(result.all())
+
     async def save_loan(self, wallet_address: str, loan: Loan) -> Loan:
         user = await self.get_or_create_user(wallet_address)
         loan.user_id = user.id

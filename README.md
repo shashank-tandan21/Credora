@@ -150,6 +150,20 @@ Each package has its own detailed README:
 
 No blockchain, wallet, or database required. Needs **Python 3.11+** and **Node.js 22.12+**.
 
+To start the frontend and backend together from the repository root:
+
+```powershell
+npm install
+npm run dev
+```
+
+The frontend is available at `http://127.0.0.1:3000`, the API at
+`http://127.0.0.1:8000`, and the interactive API docs at
+`http://127.0.0.1:8000/docs`. This command starts the frontend in Demo Mode and
+uses the existing `backend/.venv` environment.
+
+For manual two-terminal startup, use the commands below.
+
 For this no-blockchain quick start, create `frontend/.env.local` with
 `VITE_DEMO_MODE=true`. Without that setting, the frontend defaults to Hardhat Local
 on-chain mode so wallet transactions use local ETH for gas.

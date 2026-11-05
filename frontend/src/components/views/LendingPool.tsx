@@ -15,7 +15,7 @@ import { networkLabel } from '../../web3/config'
 import { useOnChainStatus, usePoolChainData } from '../../web3/hooks'
 import { formatUsdcExact, fromUsdcUnits, toUsdcUnits } from '../../web3/units'
 import { useContractTransaction } from '../../web3/useContractTransaction'
-import type { LenderPosition, PoolStatistics } from '../../types'
+import type { LenderPosition, LoanRequest, PoolStatistics } from '../../types'
 
 export const LendingPool: React.FC = () => {
   const { networkMode } = useAuth()
@@ -26,6 +26,7 @@ export const LendingPool: React.FC = () => {
   const queryClient = useQueryClient()
   const [stats, setStats] = useState<PoolStatistics | null>(null)
   const [position, setPosition] = useState<LenderPosition | null>(null)
+  const [loanRequests, setLoanRequests] = useState<LoanRequest[]>([])
   const [isDepositOpen, setIsDepositOpen] = useState(false)
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false)
   const [amountInput, setAmountInput] = useState('')
@@ -40,9 +41,10 @@ export const LendingPool: React.FC = () => {
     setIsLoading(true)
     setLoadError(null)
     try {
-      const [s, p] = await Promise.all([api.getPoolStatistics(), api.getLenderPosition()])
+      const [s, p, loans] = await Promise.all([api.getPoolStatistics(), api.getLenderPosition(), api.getPoolLoanRequests()])
       setStats(s)
       setPosition(p)
+      setLoanRequests(loans.filter((loan) => loan.status === 'requested'))
     } catch {
       setLoadError('We could not load your pool data. Try again in a moment.')
     } finally {
@@ -199,6 +201,56 @@ export const LendingPool: React.FC = () => {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {!onchain && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <CardTitle className="text-base">Borrower requests</CardTitle>
+                    <CardDescription>
+                      Loan requests submitted by the active Demo Mode borrower.
+                    </CardDescription>
+                  </div>
+                  <Badge variant={loanRequests.length > 0 ? 'warning' : 'default'} size="sm">
+                    {loanRequests.length} pending
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loanRequests.length === 0 ? (
+                  <p className="rounded-lg border border-dashed border-line p-5 text-center text-sm text-muted">
+                    No pending borrower requests yet. New requests will appear here after submission.
+                  </p>
+                ) : (
+                  <div className="overflow-x-auto rounded-lg border border-line dark:border-line">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-surface text-muted dark:bg-subtle dark:text-muted">
+                        <tr>
+                          <th className="p-3 font-medium">Request</th>
+                          <th className="p-3 font-medium">Principal</th>
+                          <th className="p-3 font-medium">Term</th>
+                          <th className="p-3 font-medium">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-line">
+                        {loanRequests.map((loan) => (
+                          <tr key={loan.id}>
+                            <td className="p-3 font-mono text-xs text-muted">{loan.id}</td>
+                            <td className="p-3 font-semibold text-foreground">{formatUSD(loan.amount)}</td>
+                            <td className="p-3 text-muted">{loan.duration_days} days</td>
+                            <td className="p-3">
+                              <Badge variant="warning" size="sm">Awaiting funding</Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {onchain && (
             <Button
               size="sm"
