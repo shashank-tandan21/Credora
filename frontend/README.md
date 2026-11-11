@@ -143,3 +143,10 @@ extension is needed. It covers connect, identity registration with backend
 verification, attestation, borrowing, repayment, deposit, a revert shown as failed,
 Demo Mode labelling, phone-width layout, and the wrong-network block. Set `BASE_URL` if
 the dev server is not on port 3000.
+### ETH/USD oracle
+
+In on-chain Sepolia mode, the header reads the current value from the configured
+Chainlink ETH/USD feed and refreshes it every 30 seconds. Hardhat Local cannot access
+the production Chainlink feed, so it uses the deployed mock feed and labels the value
+as `Mock Chainlink`. Demo Mode does not query an oracle and labels the value as a
+simulation.

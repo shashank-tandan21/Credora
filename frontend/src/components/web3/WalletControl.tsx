@@ -29,20 +29,30 @@ function useWalletActions() {
 
 /** Header wallet control: demo wallet, connect, wrong-network switch, or connected account. */
 export const WalletControl: React.FC = () => {
-  const { networkMode, walletAddress } = useAuth()
+  const { networkMode, walletAddress, setNetworkMode } = useAuth()
   const status = useOnChainStatus()
   const actions = useWalletActions()
   const disconnect = useDisconnect()
 
   if (networkMode === 'demo') {
     return (
-      <div
-        title="Simulated demo wallet. No blockchain connection is used in Demo Mode."
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-line dark:border-line bg-surface dark:bg-surface text-xs font-mono"
-      >
-        <Wallet className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
-        <span className="hidden sm:inline text-foreground dark:text-foreground">{truncateAddress(walletAddress)}</span>
-        <span className="hidden sm:inline text-xs font-sans font-semibold uppercase text-amber-600 dark:text-amber-400">Demo</span>
+      <div className="flex items-center gap-2">
+        <div
+          title="Simulated demo wallet. No blockchain connection is used in Demo Mode."
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-line dark:border-line bg-surface dark:bg-surface text-xs font-mono"
+        >
+          <Wallet className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
+          <span className="hidden sm:inline text-foreground dark:text-foreground">{truncateAddress(walletAddress)}</span>
+          <span className="hidden sm:inline text-xs font-sans font-semibold uppercase text-amber-600 dark:text-amber-400">Demo</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setNetworkMode('onchain')}
+          className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-100 dark:border-rose-800/70 dark:bg-rose-950/40 dark:text-rose-300"
+          title="Switch to on-chain mode to connect MetaMask"
+        >
+          Connect MetaMask
+        </button>
       </div>
     )
   }

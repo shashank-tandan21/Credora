@@ -83,6 +83,17 @@ class LoanService:
         loans = await repository_call(get_repository().list_open_loans)
         return [self._loan_response(loan, 0, loan.wallet_address) for loan in loans]
 
+    async def fund_demo_loan(self, loan_id, user: AuthenticatedUser) -> LoanRequestResponse:
+        if not get_settings().demo_mode:
+            raise HTTPException(status_code=404, detail="Demo loan funding is only available in Demo Mode.")
+        loans = await repository_call(get_repository().list_open_loans)
+        loan = next((item for item in loans if item.id == loan_id), None)
+        if loan is None:
+            raise HTTPException(status_code=404, detail="Open loan request was not found.")
+        loan.status = "active"
+        loan = await repository_call(get_repository().update_loan, loan)
+        return self._loan_response(loan, 0, loan.wallet_address)
+
     async def pool_statistics(self) -> PoolStatisticsResponse:
         if not get_settings().demo_mode:
             result = await repository_call(get_repository().pool_statistics)

@@ -22,7 +22,7 @@ import { contracts } from '../../web3/contracts'
 import { loanManagerAbi } from '../../web3/generated/abis'
 import { useBorrowerChainState, useOnChainStatus } from '../../web3/hooks'
 import { formatUsdcExact, fromUsdcUnits, toUsdcUnits } from '../../web3/units'
-import { useContractTransaction } from '../../web3/useContractTransaction'
+import { useContractTransaction, useDemoTransaction } from '../../web3/useContractTransaction'
 import type { CreditAssessment, LoanQuote, LoanRequest } from '../../types'
 
 interface LoanMarketplaceProps {
@@ -45,6 +45,7 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
   const chainStatus = useOnChainStatus()
   const chainBorrower = useBorrowerChainState()
   const { run, isRunning } = useContractTransaction()
+  const demoTransaction = useDemoTransaction()
 
   const eligibleLimit = onchain
     ? chainBorrower.scoreValid
@@ -134,7 +135,7 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
   })()
   const candidateQuote = onchain ? onChainQuote : quoteAssessmentId === currentAssessment?.id ? backendQuote : null
   const quote = isCurrentQuote(candidateQuote, amount, durationDays, eligibleLimit) ? candidateQuote : null
-  const canSubmit = !!quote && !isSubmittingLoan && !isRunning && (onchain ? chainStatus.canTransact && !chainQuote.isFetching && !chainQuote.isError : !!profile && !isLoadingQuote)
+  const canSubmit = !!quote && !isSubmittingLoan && !isRunning && !demoTransaction.isRunning && (onchain ? chainStatus.canTransact && !chainQuote.isFetching && !chainQuote.isError : !!profile && !isLoadingQuote)
 
 
   const handleApplyLoan = async () => {
@@ -153,9 +154,16 @@ export const LoanMarketplace: React.FC<LoanMarketplaceProps> = ({
 
     setIsSubmittingLoan(true)
     try {
-      const loan = await api.requestLoan(amount, durationDays)
       setIsConfirmModalOpen(false)
+      const loan = await demoTransaction.run('Request demo loan', () => api.requestLoan(amount, durationDays))
+      if (!loan) return
       setSuccess({ kind: 'demo', loan })
+      console.info('[Credora demo loan request] Simulated request recorded; no blockchain transaction or gas fee was used.', {
+        borrower: loan.wallet_address,
+        amount: loan.amount,
+        durationDays: loan.duration_days,
+        loanId: loan.id,
+      })
       onLoanCreated(loan)
     } catch (err: unknown) {
       setErrorMessage((err as Error).message)

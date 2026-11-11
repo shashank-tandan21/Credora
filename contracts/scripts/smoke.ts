@@ -29,6 +29,8 @@ interface Evidence {
   status: "confirmed";
   blockNumber: number;
   gasUsed: string;
+  gasPrice: string;
+  gasFeeEth: string;
   timestamp: string;
 }
 
@@ -66,9 +68,13 @@ async function record(step: string, pending: Promise<ContractTransactionResponse
     status: "confirmed",
     blockNumber: receipt.blockNumber,
     gasUsed: receipt.gasUsed.toString(),
+    gasPrice: receipt.gasPrice.toString(),
+    gasFeeEth: ethers.formatEther(receipt.gasUsed * receipt.gasPrice),
     timestamp: new Date(Number(block?.timestamp ?? 0) * 1000).toISOString(),
   });
-  console.log(`  ✔ ${step.padEnd(40)} ${transaction.hash}`);
+  console.log(
+    `  ✔ ${step.padEnd(40)} ${transaction.hash} | gas ${receipt.gasUsed} @ ${ethers.formatUnits(receipt.gasPrice, "gwei")} gwei = ${ethers.formatEther(receipt.gasUsed * receipt.gasPrice)} ETH`,
+  );
 }
 
 function as(contract: Contract, signer: typeof operator | Wallet): Contract {

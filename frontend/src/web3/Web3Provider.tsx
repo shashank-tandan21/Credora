@@ -10,7 +10,7 @@ const queryClient = new QueryClient({
 })
 
 export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <WagmiProvider config={wagmiConfig}>
+  <WagmiProvider config={wagmiConfig} reconnectOnMount={false}>
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   </WagmiProvider>
 )

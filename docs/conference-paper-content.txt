@@ -1,0 +1,196 @@
+Credora: An Explainable Blockchain-Based Academic Micro-Lending Platform
+
+Abstract
+
+Students and early-career researchers can experience short-term financial gaps
+while having limited traditional credit history. Credora, also called REBOUND,
+is an academic prototype that explores explainable, undercollateralized
+micro-lending through a combination of a React web application, a FastAPI
+backend, and Ethereum smart contracts. The system represents borrower evidence
+through five transparent credit factors, records score attestations on-chain,
+provides liquidity through an ERC-4626 lending pool, and supports scheduled
+repayment, recovery plans, and score disputes. A browser wallet signs all
+on-chain actions, while the backend performs read-only receipt verification.
+The prototype includes a Demo Mode for safe development and a local Hardhat
+mode for end-to-end blockchain testing. Contract tests, frontend tests, and
+backend tests provide evidence for the implemented workflows. The system is
+not intended for real lending, financial advice, or mainnet deployment.
+
+Keywords
+
+Blockchain lending; explainable credit scoring; Ethereum; academic finance;
+smart contracts; decentralized applications; micro-lending.
+
+1. Introduction
+
+Small emergency loans can help students bridge delayed stipends, conference
+expenses, deposits, or research costs. Traditional lending systems often
+provide limited access to borrowers with thin credit files. At the same time,
+opaque automated scoring can make it difficult for a borrower to understand or
+challenge a decision.
+
+Credora investigates a transparent alternative. The platform combines an
+explainable scoring model with blockchain-enforced lending rules. Borrowers
+submit financial evidence and receive a score assembled from five weighted
+factors. Lenders contribute to a shared pool rather than selecting individual
+borrowers. The contracts enforce identity, eligibility, loan state, repayment,
+overdue handling, restructuring, and disputes.
+
+This work makes three contributions:
+
+1. A full-stack architecture that separates browser wallet signing, backend
+   application services, and on-chain financial state.
+2. An explainable academic scoring workflow with visible factor contributions
+   and a dispute path.
+3. A testable local blockchain prototype with explicit transaction lifecycle
+   states and receipt verification.
+
+2. System Architecture
+
+The implementation contains three main layers.
+
+2.1 Frontend
+
+The frontend is implemented with React 19, TypeScript, Vite, Tailwind CSS,
+wagmi, and viem. It provides Borrower, Lender, and Reviewer workspaces. Demo
+Mode uses simulated data and visibly labels simulated actions. On-chain mode
+reads live contract state and sends transactions through an injected browser
+wallet such as MetaMask.
+
+The transaction interface separates Prepared, Submitted, Pending, Confirmed,
+and Failed states. A transaction is not presented as successful merely because
+the wallet returned a hash. After confirmation, the interface displays the
+sender, recipient contract, transaction hash, gas used, gas price, and actual
+gas fee paid. Multi-step operations display the combined fee.
+
+2.2 Backend
+
+The backend is a FastAPI service organized into routes, schemas, services, and
+repositories. It supports authentication, borrower profiles, evidence,
+assessments, loan quotes, loan requests, repayments, pool statistics, recovery,
+disputes, and chain verification. Demo Mode uses an in-memory repository.
+Production mode is designed for PostgreSQL and requires explicit configuration.
+
+The backend never stores private keys and never signs blockchain transactions.
+For on-chain identity registration, it verifies the receipt, chain, status,
+contract address, event, borrower wallet, and required confirmations.
+
+2.3 Smart contracts
+
+The Solidity layer contains MockUSDC, IdentityRegistry, CreditScoreRegistry,
+LendingPool, LoanManager, RecoveryManager, and DisputeManager. OpenZeppelin
+components provide standard token and access-control primitives. The lending
+pool follows ERC-4626 share accounting. Role-gated operators can attest scores,
+fund queued loans, review disputes, and manage recovery plans.
+
+3. Explainable Credit Model
+
+The academic scoring model normalizes submitted evidence into five factors:
+
+Repayment history                 35 percent
+Affordability                     25 percent
+Cash-flow stability               15 percent
+Debt burden                       15 percent
+Evidence quality                  10 percent
+
+The score is the weighted sum of the five normalized values. The backend
+exposes each component and contribution, and the frontend explains the
+strongest positive factor and the factor limiting the score. The borrowing
+limit is derived as score multiplied by 15 MockUSDC, capped at 2,000 MockUSDC.
+The model is illustrative and does not independently verify income or credit
+worthiness.
+
+4. Lending and Recovery Workflow
+
+A borrower first creates a profile, submits evidence, and requests an
+assessment. After reviewing the quote, the borrower requests a loan. If pool
+liquidity is available, the LoanManager can fund and disburse the loan. If
+liquidity is insufficient, the request remains queued for an authorized
+funder.
+
+Repayments follow a fixed schedule. The protocol can mark a loan overdue after
+the documented grace period. A borrower may propose a restructuring request
+with a reason, total repayment amount, due date, and milestones. A recovery
+officer can approve or reject the plan. Milestones are completed in order and
+late or incomplete plans can proceed toward default according to contract rules.
+
+Borrowers may dispute their own score attestation. A reviewer resolves the
+dispute. If a dispute is upheld, the attestation is revoked and the borrower
+must receive a new valid score before borrowing again.
+
+5. Security and Trust Boundaries
+
+The system uses explicit trust boundaries:
+
+1. Wallet keys remain in the browser wallet.
+2. Backend authentication binds a session to a wallet address.
+3. Chain actions are simulated before a wallet prompt.
+4. Receipt confirmation checks chain, status, target contract, and event data.
+5. Demo actions do not create transaction hashes or claim blockchain success.
+6. Contracts enforce roles, eligibility, pause controls, input validation, and
+   reentrancy protections where required.
+
+The prototype uses public Hardhat development keys only in local development.
+It is not audited and must not be used with real funds.
+
+6. Implementation and Evaluation
+
+The repository includes:
+
+- React frontend with borrower, lender, and reviewer flows.
+- FastAPI backend with demo repositories and PostgreSQL-ready boundaries.
+- Seven Solidity contracts and deployment/export scripts.
+- Deterministic local Hardhat deployment.
+- Contract unit, validation, reentrancy, and integration tests.
+- Frontend unit tests for API behavior, navigation, units, errors, and
+  transaction lifecycle.
+- Manual testing documentation and a single root command for starting the
+  demo frontend and backend together.
+
+At the current implementation checkpoint, the contract suite reports 97
+passing tests and the frontend suite reports 36 passing tests. Backend loan
+tests pass. Some backend chain tests depend on demo environment variables and
+can fail when a populated local chain configuration remains in backend/.env;
+this is configuration drift rather than evidence of a protocol failure.
+
+7. Limitations
+
+The scoring model is not validated against real lending outcomes. Evidence is
+submitted as illustrative normalized values and is not connected to financial
+institutions or credit bureaus. The test token has no real value. PostgreSQL
+production integration and Sepolia deployment require additional operational
+configuration and evidence. Browser-wallet and testnet behavior require manual
+environment setup. The contracts and application have not undergone a formal
+security audit, privacy review, or regulatory assessment.
+
+8. Future Work
+
+Future work should evaluate the scoring model with ethically collected,
+consented data; add stronger evidence provenance and privacy-preserving
+attestations; complete PostgreSQL integration testing; improve event indexing;
+add accessibility and browser end-to-end coverage; conduct an independent
+smart-contract audit; and define governance, dispute-review independence,
+privacy, and compliance requirements before any real-world deployment.
+
+9. Conclusion
+
+Credora demonstrates how explainable scoring and blockchain-enforced lending
+rules can be combined in an academic micro-lending prototype. Its key design
+principles are transparent factors, shared liquidity, user-controlled signing,
+receipt-based confirmation, recoverability, and contestable decisions. The
+system is best understood as an educational and experimental platform for
+studying decentralized lending workflows, not as a production financial
+service.
+
+References
+
+[1] Ethereum Foundation, Ethereum documentation, smart contracts and
+transaction execution.
+
+[2] OpenZeppelin, OpenZeppelin Contracts documentation, access control,
+security utilities, and token standards.
+
+[3] EIP-4626, Tokenized Vault Standard.
+
+[4] Credora repository documentation: README, backend README, frontend README,
+contracts README, and manual testing guide.

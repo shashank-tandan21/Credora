@@ -59,6 +59,24 @@ export function useContractTransaction() {
           gasUsed: confirmed.reduce((total, step) => total + step.gasUsed, 0n).toString(),
           gasPrice: final ? formatGwei(final.gasPrice) : undefined,
         })
+        if (final) {
+          const totalGasWei = confirmed.reduce((total, step) => total + step.gasUsed * step.gasPrice, 0n)
+          const logLabel = title.toLowerCase().includes('fund')
+            ? 'Credora loan funding confirmed'
+            : title.toLowerCase().includes('request')
+              ? 'Credora loan request confirmed'
+              : 'Credora transaction confirmed'
+          console.info(`[${logLabel}]`, {
+            network: networkLabel,
+            sender: final.receipt.from,
+            recipient: final.receipt.to,
+            transactionHash: final.hash,
+            gasUsed: confirmed.reduce((total, step) => total + step.gasUsed, 0n).toString(),
+            gasPriceGwei: final ? formatGwei(final.gasPrice) : undefined,
+            gasFeeEth: formatEther(totalGasWei),
+            confirmedTransactions: confirmed.length,
+          })
+        }
         return confirmed
       } catch (error) {
         const failure = describeTransactionError(error)
@@ -77,6 +95,96 @@ export function useContractTransaction() {
       }
     },
     [queryClient, setTransactionStatus],
+  )
+
+  return { run, isRunning }
+}
+
+const DEMO_CONTRACT = '0xDemo000000000000000000000000000000000000'
+
+function demoHash(): string {
+  const suffix = `${Date.now().toString(16)}${Math.random().toString(16).slice(2)}`.padEnd(64, '0').slice(0, 64)
+  return `0x${suffix}`
+}
+
+/** Mirrors the wallet lifecycle in Demo Mode without claiming that a chain transaction occurred. */
+export function useDemoTransaction() {
+  const { walletAddress, setTransactionStatus } = useAuth()
+  const queryClient = useQueryClient()
+  const [isRunning, setIsRunning] = useState(false)
+
+  const run = useCallback(
+    async <T>(title: string, action: () => Promise<T>): Promise<T | null> => {
+      setIsRunning(true)
+      const hash = demoHash()
+      const gasUsed = '142000'
+      const gasPrice = '1.500'
+      const gasCost = '0.000213'
+      try {
+        setTransactionStatus({
+          state: 'prepared',
+          title,
+          description: 'Demo simulation prepared. No wallet approval is required.',
+          simulated: true,
+          hash,
+          sender: walletAddress,
+          recipient: DEMO_CONTRACT,
+          gasUsed,
+          gasPrice,
+          gasCost,
+        })
+        await new Promise((resolve) => setTimeout(resolve, 250))
+        setTransactionStatus({
+          state: 'submitted',
+          title,
+          description: 'Demo transaction submitted to the simulated network.',
+          simulated: true,
+          hash,
+          sender: walletAddress,
+          recipient: DEMO_CONTRACT,
+          gasUsed,
+          gasPrice,
+          gasCost,
+        })
+        await new Promise((resolve) => setTimeout(resolve, 350))
+        const result = await action()
+        setTransactionStatus({
+          state: 'confirmed',
+          title,
+          description: 'Simulated confirmation complete. No blockchain transaction was sent.',
+          simulated: true,
+          hash,
+          sender: walletAddress,
+          recipient: DEMO_CONTRACT,
+          gasUsed,
+          gasPrice,
+          gasCost,
+        })
+        console.info('[Credora demo transaction] Simulated confirmation', {
+          sender: walletAddress,
+          recipient: DEMO_CONTRACT,
+          transactionHash: hash,
+          gasUsed,
+          gasPriceGwei: gasPrice,
+          simulatedGasFeeEth: gasCost,
+        })
+        return result
+      } catch (error) {
+        setTransactionStatus({
+          state: 'failed',
+          title,
+          description: 'The simulated transaction failed.',
+          simulated: true,
+          hash,
+          error: error instanceof Error ? error.message : 'The demo action failed.',
+        })
+        return null
+      } finally {
+        setIsRunning(false)
+        await queryClient.invalidateQueries()
+      }
+    },
+    [queryClient, setTransactionStatus, walletAddress],
   )
 
   return { run, isRunning }

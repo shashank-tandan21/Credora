@@ -74,6 +74,10 @@ afterwards so the frontend picks them up.
 `smoke:local` runs 20 real transactions (deposit, register, attest, borrow, partial and
 full repayment, dispute, overdue, restructuring, milestone, withdrawal), waits for each
 receipt, and writes the evidence to `deployments/localhost-smoke.json` (git-ignored).
+The CLI also prints each confirmed transaction's gas used, effective gas price in gwei,
+and total fee in ETH. The browser on-chain flow prints the same details in the browser
+developer console after MetaMask confirmation; Demo Mode logs that no blockchain gas fee
+was used because its actions are simulated.
 
 ### Sepolia deployment (Phase 11)
 

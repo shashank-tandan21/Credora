@@ -253,6 +253,9 @@ class DemoRepository(BaseRepository):
         self.store.loans_by_wallet.setdefault(wallet_address, []).append(loan)
         return loan
 
+    def update_loan(self, loan: DemoLoan) -> DemoLoan:
+        return loan
+
     def pool_statistics(self) -> dict[str, float | int]:
         loans = [loan for items in self.store.loans_by_wallet.values() for loan in items]
         outstanding = sum(loan.principal_amount for loan in loans)

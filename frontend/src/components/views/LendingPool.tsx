@@ -14,7 +14,7 @@ import { steps } from '../../web3/actions'
 import { networkLabel } from '../../web3/config'
 import { useOnChainStatus, usePoolChainData } from '../../web3/hooks'
 import { formatUsdcExact, fromUsdcUnits, toUsdcUnits } from '../../web3/units'
-import { useContractTransaction } from '../../web3/useContractTransaction'
+import { useContractTransaction, useDemoTransaction } from '../../web3/useContractTransaction'
 import type { LenderPosition, LoanRequest, PoolStatistics } from '../../types'
 
 export const LendingPool: React.FC = () => {
@@ -23,6 +23,7 @@ export const LendingPool: React.FC = () => {
   const chain = usePoolChainData()
   const chainStatus = useOnChainStatus()
   const { run, isRunning } = useContractTransaction()
+  const demoTransaction = useDemoTransaction()
   const queryClient = useQueryClient()
   const [stats, setStats] = useState<PoolStatistics | null>(null)
   const [position, setPosition] = useState<LenderPosition | null>(null)
@@ -33,9 +34,11 @@ export const LendingPool: React.FC = () => {
   const [isActionLoading, setIsActionLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [fundedLoanIds, setFundedLoanIds] = useState<Set<string>>(() => new Set())
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(
     null
   )
+  const [fundingLoanId, setFundingLoanId] = useState<string | null>(null)
 
   const reloadData = async () => {
     setIsLoading(true)
@@ -44,7 +47,7 @@ export const LendingPool: React.FC = () => {
       const [s, p, loans] = await Promise.all([api.getPoolStatistics(), api.getLenderPosition(), api.getPoolLoanRequests()])
       setStats(s)
       setPosition(p)
-      setLoanRequests(loans.filter((loan) => loan.status === 'requested'))
+      setLoanRequests(loans.filter((loan) => loan.status === 'requested' && !fundedLoanIds.has(loan.id)))
     } catch {
       setLoadError('We could not load your pool data. Try again in a moment.')
     } finally {
@@ -53,7 +56,17 @@ export const LendingPool: React.FC = () => {
   }
 
   useEffect(() => {
-    if (!onchain) reloadData()
+    if (!onchain) void reloadData()
+  }, [onchain])
+  useEffect(() => {
+    if (onchain) return
+    const refresh = () => { void reloadData() }
+    window.addEventListener('storage', refresh)
+    window.addEventListener('credora-demo-store-updated', refresh)
+    return () => {
+      window.removeEventListener('storage', refresh)
+      window.removeEventListener('credora-demo-store-updated', refresh)
+    }
   }, [onchain])
 
   // In on-chain mode every figure on this page comes from the LendingPool contract.
@@ -78,7 +91,7 @@ export const LendingPool: React.FC = () => {
         }
       : null
     : position
-  const actionBusy = isActionLoading || isRunning
+  const actionBusy = isActionLoading || isRunning || demoTransaction.isRunning
   const actionsDisabled = actionBusy || (onchain ? !chainStatus.canTransact || !chain.loaded : isLoading || !!loadError)
 
   const showMessage = (type: 'success' | 'error', text: string) => {
@@ -114,6 +127,24 @@ export const LendingPool: React.FC = () => {
     }
   }
 
+  const handleDemoFunding = async (loan: LoanRequest) => {
+    setFundingLoanId(loan.id)
+    try {
+      const completed = await demoTransaction.run('Fund demo loan', () => api.fundPoolLoanRequest(loan.id).then(() => undefined))
+      if (!completed) return
+      setFundedLoanIds((current) => new Set(current).add(loan.id))
+      setLoanRequests((current) => current.filter((request) => request.id !== loan.id))
+      showMessage('success', `Demo funding accepted for ${formatUSD(loan.amount)}. The borrower can now repay the facility.`)
+    } catch (error) {
+      showMessage(
+        'error',
+        error instanceof Error ? error.message : 'The loan request could not be funded.',
+      )
+    } finally {
+      setFundingLoanId(null)
+    }
+  }
+
   const handleDeposit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (onchain) {
@@ -129,6 +160,10 @@ export const LendingPool: React.FC = () => {
       await reloadData()
       setIsDepositOpen(false)
       setAmountInput('')
+      console.info('[Credora demo lender action] Simulated deposit recorded; no blockchain transaction or gas fee was used.', {
+        lender: chainStatus.address ?? 'demo wallet',
+        amount: amt,
+      })
       showMessage(
         'success',
         `Simulated deposit of ${formatUSD(amt)} recorded in Demo Mode. No blockchain transaction was sent.`
@@ -239,7 +274,17 @@ export const LendingPool: React.FC = () => {
                             <td className="p-3 font-semibold text-foreground">{formatUSD(loan.amount)}</td>
                             <td className="p-3 text-muted">{loan.duration_days} days</td>
                             <td className="p-3">
-                              <Badge variant="warning" size="sm">Awaiting funding</Badge>
+                              <div className="flex items-center justify-between gap-3">
+                                <Badge variant="warning" size="sm">Awaiting funding</Badge>
+                                <Button
+                                  size="sm"
+                                  variant="success"
+                                  isLoading={fundingLoanId === loan.id}
+                                  onClick={() => void handleDemoFunding(loan)}
+                                >
+                                  Accept & fund
+                                </Button>
+                              </div>
                             </td>
                           </tr>
                         ))}

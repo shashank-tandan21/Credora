@@ -31,13 +31,23 @@ export const Header = ({ activeTab, onSelectTab }: { activeTab: string; onSelect
         <Button onClick={() => navigate('borrower')} rightIcon={<ArrowUpRight size={16} />}>Open app</Button>
       </nav> : <div className="header-controls">
         <div
-          title={oracle.configured ? 'Chainlink ETH/USD price feed' : 'Chainlink ETH/USD feed is not configured'}
+          title={
+            networkMode === 'demo'
+              ? 'Demo Mode does not query Chainlink.'
+              : oracle.simulated
+                ? 'Hardhat Local uses the deployed mock Chainlink feed.'
+                : 'Live Chainlink ETH/USD price feed.'
+          }
           className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-line dark:border-line bg-surface dark:bg-surface text-xs"
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${oracle.price ? 'bg-emerald-500' : 'bg-amber-500'}`} aria-hidden="true" />
+          <span className={`w-1.5 h-1.5 rounded-full ${networkMode === 'onchain' && oracle.price ? 'bg-emerald-500' : 'bg-amber-500'}`} aria-hidden="true" />
           <span className="font-semibold">ETH/USD</span>
-          <span className="font-mono">{oracle.price ?? (oracle.configured ? 'Loading…' : 'Unavailable')}</span>
-          <span className="text-muted">Chainlink</span>
+          <span className="font-mono">
+            {networkMode === 'demo' ? 'Demo' : oracle.price ?? (oracle.configured ? 'Loading…' : 'Unavailable')}
+          </span>
+          <span className="text-muted">
+            {networkMode === 'demo' ? 'Simulation' : oracle.simulated ? 'Mock Chainlink' : 'Chainlink live'}
+          </span>
         </div>
         <label className="mode-select"><span className="sr-only">Network mode</span>
           <select aria-label="Network mode" value={networkMode} onChange={e => setNetworkMode(e.target.value as 'demo' | 'onchain')}>
@@ -47,7 +57,7 @@ export const Header = ({ activeTab, onSelectTab }: { activeTab: string; onSelect
         <button className="icon-button" onClick={toggleTheme} aria-label={resolvedTheme === 'dark' ? 'Use light theme' : 'Use dark theme'}>
           {resolvedTheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </button>
-        {networkMode === 'onchain' && <WalletControl />}
+        <WalletControl />
       </div>}
     </div>
   </header>

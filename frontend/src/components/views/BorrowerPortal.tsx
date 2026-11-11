@@ -26,7 +26,7 @@ import { steps } from '../../web3/actions'
 import { explorerTxUrl, networkLabel } from '../../web3/config'
 import { useBorrowerChainState, useOnChainStatus } from '../../web3/hooks'
 import { fromUsdcUnits, hashText } from '../../web3/units'
-import { useContractTransaction } from '../../web3/useContractTransaction'
+import { useContractTransaction, useDemoTransaction } from '../../web3/useContractTransaction'
 import type { CreditAssessment, LoanRequest } from '../../types'
 
 interface BorrowerPortalProps {
@@ -55,6 +55,7 @@ export const BorrowerPortal: React.FC<BorrowerPortalProps> = ({
   const chainStatus = useOnChainStatus()
   const chainBorrower = useBorrowerChainState()
   const { run, isRunning } = useContractTransaction()
+  const demoTransaction = useDemoTransaction()
   const subTab = initialSubTab
   const setSubTab = onSubTabChange
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
@@ -433,12 +434,20 @@ export const BorrowerPortal: React.FC<BorrowerPortalProps> = ({
                                       size="sm"
                                       variant="outline"
                                       className="h-7 text-sm"
-                                      onClick={() => {
-                                        inst.status = 'paid'
-                                        flashSuccess(
-                                          `Demo payment simulated for installment #${inst.installment_number} (${formatUSD(inst.amount)}). No blockchain transaction was sent.`
-                                        )
-                                        onRefresh()
+                                      onClick={async () => {
+                                        try {
+                                          const completed = await demoTransaction.run(
+                                            `Repay demo installment #${inst.installment_number}`,
+                                            () => api.simulateRepayment(activeLoan.id, inst.installment_number),
+                                          )
+                                          if (!completed) return
+                                          flashSuccess(
+                                            `Demo payment simulated for installment #${inst.installment_number} (${formatUSD(inst.amount)}). No blockchain transaction was sent.`
+                                          )
+                                          onRefresh()
+                                        } catch (error) {
+                                          setNoticeMsg(error instanceof Error ? error.message : 'The demo payment could not be recorded.')
+                                        }
                                       }}
                                     >
                                       Simulate Payment

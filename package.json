@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "concurrently -k -n BACKEND,FRONTEND -c cyan,green \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "cd backend && .venv\\Scripts\\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000",
-    "dev:frontend": "set \"VITE_DEMO_MODE=true\" && npm --prefix frontend run dev -- --host 127.0.0.1 --port 3000"
+    "dev:frontend": "set \"VITE_DEMO_MODE=true\" && npm --prefix frontend run dev -- --host 127.0.0.1 --port 3000",
+    "dev:onchain": "concurrently -k -n BACKEND,FRONTEND -c cyan,green \"npm run dev:backend\" \"npm run dev:frontend:onchain\"",
+    "dev:frontend:onchain": "set \"VITE_DEMO_MODE=false\" && npm --prefix frontend run dev -- --host 127.0.0.1 --port 3000"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

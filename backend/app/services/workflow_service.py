@@ -190,6 +190,28 @@ class WorkflowService:
         repayment = await repository_call(self.repository.update_repayment, repayment)
         return self._repayment_response(repayment)
 
+    async def simulate_repayment(
+        self, user: AuthenticatedUser, loan_id: UUID, installment_number: int
+    ) -> RepaymentResponse:
+        if not self.demo_mode:
+            raise HTTPException(status_code=404, detail="Demo repayment is only available in Demo Mode.")
+        prepared = await self.prepare_repayment(
+            user,
+            loan_id,
+            RepaymentPrepareRequest(
+                installment_number=installment_number,
+                idempotency_key=f"demo-payment-{loan_id}-{installment_number}",
+            ),
+        )
+        return await self.sync_repayment(
+            user,
+            prepared.id,
+            RepaymentSyncRequest(
+                status="confirmed",
+                transaction_hash=f"demo:{prepared.id}",
+            ),
+        )
+
     async def list_repayments(
         self, user: AuthenticatedUser, loan_id: UUID
     ) -> list[RepaymentResponse]:

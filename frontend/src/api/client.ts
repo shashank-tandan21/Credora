@@ -141,7 +141,8 @@ class ApiClient {
         let errDetail = ''
         try {
           const errData = await response.json()
-          errDetail = errData.detail || errData.error?.message || ''
+          const detail = errData.detail || errData.error?.message || ''
+          errDetail = typeof detail === 'string' ? detail : JSON.stringify(detail)
         } catch {
           // ignore json parse error
         }
@@ -348,6 +349,9 @@ class ApiClient {
 
   // --- Loan APIs ---
   async getLoanQuote(amount: number, durationDays: number): Promise<LoanQuote> {
+    if (this.networkMode === 'demo') {
+      return mockStore.calculateQuote(this.demoWallet, amount, durationDays)
+    }
     try {
       return await this.request<LoanQuote>('/loans/quote', {
         method: 'POST',
@@ -355,14 +359,14 @@ class ApiClient {
       })
     } catch (err: unknown) {
       const error = err as Error
-      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
-        return mockStore.calculateQuote(this.demoWallet, amount, durationDays)
-      }
       throw error
     }
   }
 
   async requestLoan(amount: number, durationDays: number): Promise<LoanRequest> {
+    if (this.networkMode === 'demo') {
+      return mockStore.createLoan(this.demoWallet, amount, durationDays)
+    }
     try {
       return await this.request<LoanRequest>('/loans', {
         method: 'POST',
@@ -370,25 +374,21 @@ class ApiClient {
       })
     } catch (err: unknown) {
       const error = err as Error
-      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
-        return mockStore.createLoan(this.demoWallet, amount, durationDays)
-      }
       throw error
     }
   }
 
   async getLoans(): Promise<LoanRequest[]> {
+    if (this.networkMode === 'demo') {
+      return mockStore.getLoans(this.demoWallet)
+    }
     try {
       return await this.request<LoanRequest[]>('/loans')
     } catch (err: unknown) {
       const error = err as Error
-      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
-        return mockStore.getLoans(this.demoWallet)
-      }
       if (
         error.message.includes('404') ||
-        error.message.includes('not been registered') ||
-        (this.networkMode === 'demo' && error.message.includes('401'))
+        error.message.includes('not been registered')
       ) {
         return []
       }
@@ -410,13 +410,38 @@ class ApiClient {
   }
 
   async getPoolLoanRequests(): Promise<LoanRequest[]> {
+    if (this.networkMode === 'demo') {
+      return mockStore.getAllOpenLoans()
+    }
     try {
       return await this.request<LoanRequest[]>('/pool/loan-requests')
     } catch (err: unknown) {
       const error = err as Error
-      if (error.message === 'BACKEND_OFFLINE' && this.networkMode === 'demo') {
-        return mockStore.getAllOpenLoans()
-      }
+      throw error
+    }
+  }
+
+  async fundPoolLoanRequest(loanId: string): Promise<LoanRequest> {
+    if (this.networkMode === 'demo') {
+      return mockStore.fundLoan(loanId)
+    }
+    try {
+      return await this.request<LoanRequest>(`/pool/loan-requests/${loanId}/fund`, { method: 'POST' })
+    } catch (err: unknown) {
+      const error = err as Error
+      throw error
+    }
+  }
+
+  async simulateRepayment(loanId: string, installmentNumber: number): Promise<void> {
+    if (this.networkMode === 'demo') {
+      mockStore.markPayment(loanId, installmentNumber)
+      return
+    }
+    try {
+      await this.request(`/loans/${loanId}/repayments/${installmentNumber}/demo`, { method: 'POST' })
+    } catch (err: unknown) {
+      const error = err as Error
       throw error
     }
   }
@@ -453,6 +478,7 @@ class ApiClient {
 
 // In-browser High-Fidelity Demo Store (Faithful to FastAPI services & formulas)
 class InBrowserDemoStore {
+  private readonly storageKey = 'credora-demo-store-v1'
   private profiles = new Map<string, BorrowerProfile>()
   private evidences = new Map<string, EvidenceSubmission[]>()
   private assessments = new Map<string, CreditAssessment[]>()
@@ -470,6 +496,51 @@ class InBrowserDemoStore {
 
   constructor() {
     this.initDefaultSeedData()
+    this.restore()
+  }
+
+  private persist() {
+    if (typeof window === 'undefined') return
+    try {
+      window.localStorage.setItem(this.storageKey, JSON.stringify({
+        profiles: [...this.profiles],
+        evidences: [...this.evidences],
+        assessments: [...this.assessments],
+        loans: [...this.loans],
+        disputes: this.disputes,
+        lenderPositions: [...this.lenderPositions],
+        poolStats: this.poolStats,
+      }))
+      window.dispatchEvent(new Event('credora-demo-store-updated'))
+    } catch {
+      // Demo state remains usable when browser storage is unavailable.
+    }
+  }
+
+  private restore() {
+    if (typeof window === 'undefined') return
+    try {
+      const raw = window.localStorage.getItem(this.storageKey)
+      if (!raw) return
+      const saved = JSON.parse(raw) as {
+        profiles?: [string, BorrowerProfile][]
+        evidences?: [string, EvidenceSubmission[]][]
+        assessments?: [string, CreditAssessment[]][]
+        loans?: [string, LoanRequest[]][]
+        disputes?: DisputeRecord[]
+        lenderPositions?: [string, LenderPosition][]
+        poolStats?: PoolStatistics
+      }
+      if (saved.profiles) this.profiles = new Map(saved.profiles)
+      if (saved.evidences) this.evidences = new Map(saved.evidences)
+      if (saved.assessments) this.assessments = new Map(saved.assessments)
+      if (saved.loans) this.loans = new Map(saved.loans)
+      if (saved.disputes) this.disputes = saved.disputes
+      if (saved.lenderPositions) this.lenderPositions = new Map(saved.lenderPositions)
+      if (saved.poolStats) this.poolStats = saved.poolStats
+    } catch {
+      // Ignore malformed demo state and keep the seeded defaults.
+    }
   }
 
   private initDefaultSeedData() {
@@ -596,6 +667,7 @@ class InBrowserDemoStore {
       created_at: new Date().toISOString(),
     }
     this.profiles.set(wallet, profile)
+    this.persist()
     return profile
   }
 
@@ -607,6 +679,7 @@ class InBrowserDemoStore {
     }
     const current = this.evidences.get(wallet) || []
     this.evidences.set(wallet, [...current, item])
+    this.persist()
     return item
   }
 
@@ -677,6 +750,7 @@ class InBrowserDemoStore {
 
     const history = this.assessments.get(wallet) || []
     this.assessments.set(wallet, [...history, assessment])
+    this.persist()
     return assessment
   }
 
@@ -754,6 +828,7 @@ class InBrowserDemoStore {
       ((this.poolStats.total_outstanding_principal / this.poolStats.total_deposited) * 100).toFixed(1)
     )
 
+    this.persist()
     return loan
   }
 
@@ -763,6 +838,24 @@ class InBrowserDemoStore {
 
   getAllOpenLoans(): LoanRequest[] {
     return [...this.loans.values()].flat().filter((loan) => loan.status === 'requested')
+  }
+
+  fundLoan(loanId: string): LoanRequest {
+    const loan = [...this.loans.values()].flat().find((item) => item.id === loanId)
+    if (!loan || loan.status !== 'requested') throw new Error('Open loan request was not found')
+    loan.status = 'active'
+    this.persist()
+    return loan
+  }
+
+  markPayment(loanId: string, installmentNumber: number): void {
+    const loan = [...this.loans.values()].flat().find((item) => item.id === loanId)
+    if (!loan || loan.status !== 'active') throw new Error('Active loan was not found')
+    const installment = loan.installments.find((item) => item.installment_number === installmentNumber)
+    if (!installment || installment.status === 'paid') throw new Error('Repayment installment was not found')
+    installment.status = 'paid'
+    if (loan.installments.every((item) => item.status === 'paid')) loan.status = 'repaid'
+    this.persist()
   }
 
   getPoolStats(): PoolStatistics {
@@ -791,6 +884,7 @@ class InBrowserDemoStore {
     this.poolStats.total_pool_liquidity += amount
     updated.pool_share = Number(((updated.deposited_amount / this.poolStats.total_deposited) * 100).toFixed(2))
     this.lenderPositions.set(wallet, updated)
+    this.persist()
     return updated
   }
 
@@ -810,6 +904,7 @@ class InBrowserDemoStore {
     this.poolStats.total_deposited -= amount
     this.poolStats.total_pool_liquidity -= amount
     this.lenderPositions.set(wallet, updated)
+    this.persist()
     return updated
   }
 
@@ -823,6 +918,7 @@ class InBrowserDemoStore {
       created_at: new Date().toISOString(),
     }
     this.disputes.unshift(dispute)
+    this.persist()
     return dispute
   }
 
@@ -840,6 +936,7 @@ class InBrowserDemoStore {
     d.status = status
     d.reviewer_notes = notes
     d.resolved_at = new Date().toISOString()
+    this.persist()
     return d
   }
 }

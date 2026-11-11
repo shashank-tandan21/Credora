@@ -6,7 +6,15 @@ const subscribe = (notify: () => void) => { const query = media(); query.addEven
 const ThemeContext = createContext<{ theme: Theme; resolvedTheme: ResolvedTheme; setTheme: (theme: Theme) => void; toggleTheme: () => void } | undefined>(undefined)
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(() => {
-    try { const saved = localStorage.getItem('credora-theme'); return saved === 'dark' || saved === 'system' ? saved : 'light' } catch { return 'light' }
+    try {
+      const saved = localStorage.getItem('credora-theme')
+      const themeVersion = localStorage.getItem('credora-theme-version')
+      if (themeVersion !== '2') {
+        localStorage.setItem('credora-theme-version', '2')
+        return 'dark'
+      }
+      return saved === 'light' || saved === 'system' ? saved : 'dark'
+    } catch { return 'dark' }
   })
   const systemDark = useSyncExternalStore(subscribe, () => media().matches, () => false)
   const resolvedTheme = theme === 'system' ? (systemDark ? 'dark' : 'light') : theme

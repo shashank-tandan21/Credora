@@ -90,6 +90,11 @@ export const TransactionToast: React.FC = () => {
                   ? activeTx.description
                   : PHASE_HINTS[activeTx.state as keyof typeof PHASE_HINTS]}
             </p>
+            {activeTx.simulated && (
+              <p className="text-xs font-semibold text-amber-700 dark:text-amber-300">
+                Demo simulation · no MetaMask approval or blockchain gas was used
+              </p>
+            )}
             {!failed && !confirmed && activeTx.description && (
               <p className="text-xs text-muted dark:text-muted mt-0.5">
                 {activeTx.stepCount && activeTx.stepCount > 1
@@ -142,7 +147,7 @@ export const TransactionToast: React.FC = () => {
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 ) : (
-                  <span className="font-sans text-muted">{networkLabel}</span>
+                  <span className="font-sans text-muted">{activeTx.simulated ? 'Demo Simulation' : networkLabel}</span>
                 )}
               </span>
             </div>

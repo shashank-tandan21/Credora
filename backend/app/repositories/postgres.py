@@ -195,6 +195,13 @@ class PostgresRepository(BaseRepository):
             await session.refresh(loan)
             return loan
 
+    async def update_loan(self, loan: Loan) -> Loan:
+        async with self.session_factory() as session:
+            session.add(loan)
+            await session.commit()
+            await session.refresh(loan)
+            return loan
+
     async def pool_statistics(self) -> dict[str, float | int]:
         async with self.session_factory() as session:
             total_deposited = await session.scalar(

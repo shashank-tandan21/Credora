@@ -37,6 +37,16 @@ const MainApp: React.FC = () => {
     if (activeTab !== 'overview' && role !== activeTab) setRole(activeTab)
     document.title = activeTab === 'overview' ? 'Credora | A clearer way forward' : 'Credora | ' + (activeTab === 'borrower' ? 'Borrower' : activeTab === 'lender' ? 'Lending pool' : 'Reviewer')
   }, [activeTab, role, setRole])
+  useEffect(() => {
+    if (networkMode !== 'demo') return
+    const refresh = () => { void query.refetch() }
+    window.addEventListener('storage', refresh)
+    window.addEventListener('credora-demo-store-updated', refresh)
+    return () => {
+      window.removeEventListener('storage', refresh)
+      window.removeEventListener('credora-demo-store-updated', refresh)
+    }
+  }, [networkMode, query])
 
   return (
     <div className="app-shell">

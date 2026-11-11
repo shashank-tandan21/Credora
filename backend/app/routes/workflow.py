@@ -36,6 +36,13 @@ async def prepare_repayment(
     return await workflow_service.prepare_repayment(current_user, loan_id, request)
 
 
+@repayment_router.post("/{installment_number}/demo", response_model=RepaymentResponse)
+async def simulate_repayment(
+    loan_id: UUID, installment_number: int, current_user: CurrentUser
+) -> RepaymentResponse:
+    return await workflow_service.simulate_repayment(current_user, loan_id, installment_number)
+
+
 @repayment_router.get("", response_model=list[RepaymentResponse])
 async def list_repayments(loan_id: UUID, current_user: CurrentUser) -> list[RepaymentResponse]:
     return await workflow_service.list_repayments(current_user, loan_id)

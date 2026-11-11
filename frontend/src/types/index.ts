@@ -143,6 +143,7 @@ export type TransactionFailureKind =
   | 'error'
 
 export interface TransactionStatus {
+  simulated?: boolean
   hash?: string
   hashes?: string[]
   sender?: string

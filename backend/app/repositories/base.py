@@ -67,6 +67,10 @@ class BaseRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def update_loan(self, loan: object) -> object:
+        raise NotImplementedError
+
+    @abstractmethod
     def pool_statistics(self) -> dict[str, float | int]:
         raise NotImplementedError
 

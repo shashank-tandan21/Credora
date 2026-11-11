@@ -1,0 +1,625 @@
+CREDORA (REBOUND)
+PROJECT REPORT
+
+Project title:
+Explainable Blockchain-Based Academic Micro-Lending Platform
+
+Project type:
+Academic prototype and full-stack decentralized application
+
+Repository:
+Credora / REBOUND
+
+1. Executive Summary
+
+Credora is a full-stack academic micro-lending prototype for students and
+early-career researchers who may need small short-term loans but have limited
+traditional credit history. The system combines an explainable credit model,
+shared lending liquidity, Ethereum smart contracts, a FastAPI backend, and a
+React frontend.
+
+The platform supports three user perspectives: Borrower, Lender, and Reviewer.
+Borrowers submit financial evidence and receive a visible score breakdown.
+Lenders contribute to a shared pool. Reviewers handle score disputes and
+recovery operations. The blockchain layer enforces identity, score validity,
+loan eligibility, funding, repayments, overdue status, restructuring, and
+dispute outcomes.
+
+The project has two operating modes:
+
+Demo Mode:
+Safe local simulation without a wallet, blockchain node, or PostgreSQL.
+
+On-chain Mode:
+Local Hardhat or Sepolia execution using a browser wallet such as MetaMask.
+
+This is an educational prototype. It uses a valueless test token, an
+illustrative scoring model, unaudited contracts, and must not be used for real
+lending or real funds.
+
+2. Problem Statement
+
+Students and researchers can face temporary financial gaps caused by delayed
+stipends, conference expenses, deposits, or project costs. Traditional lending
+systems may reject these borrowers because they have limited credit history.
+Opaque scoring also makes it difficult to understand why a decision was made or
+to challenge incorrect information.
+
+The project addresses the following questions:
+
+1. Can a borrower receive an understandable credit assessment?
+2. Can lending rules be made transparent and verifiable?
+3. Can shared liquidity support small undercollateralized loans?
+4. Can overdue borrowers receive a structured recovery path?
+5. Can a borrower dispute an assessment?
+6. Can transaction success be shown only after blockchain confirmation?
+
+3. Objectives
+
+The main objectives are:
+
+- Build a responsive web application for borrower, lender, and reviewer roles.
+- Implement a five-factor explainable credit score.
+- Provide loan quotes and repayment schedules.
+- Create an ERC-4626-style shared lending pool.
+- Enforce loan rules through Solidity contracts.
+- Keep private keys inside the user wallet.
+- Verify important blockchain receipts from the backend.
+- Separate simulated Demo Mode from real on-chain actions.
+- Provide tests and documentation for the complete workflow.
+
+4. Technology Stack
+
+Frontend:
+React 19, TypeScript, Vite, Tailwind CSS v4, wagmi, viem, TanStack Query,
+Lucide React, and Vitest.
+
+Backend:
+Python 3.11+, FastAPI, Pydantic, SQLAlchemy, Alembic, PostgreSQL-ready
+repositories, and pytest.
+
+Blockchain:
+Solidity 0.8.28, Hardhat 3, ethers, OpenZeppelin Contracts 5.6.1, and
+MockUSDC for local testing.
+
+Development:
+PowerShell, npm workspaces by package, local Hardhat node, MetaMask-compatible
+injected wallet, and a root npm command that starts the demo frontend and
+backend together.
+
+5. System Architecture
+
+The browser contains the React user interface and the wallet transaction
+engine. The backend provides REST APIs for profiles, evidence, scoring, quotes,
+loans, pool information, recovery, disputes, and receipt verification. The
+Ethereum network stores identity, score attestations, pool state, loan state,
+recovery state, and dispute state.
+
+The backend does not sign transactions. It reads receipts and verifies:
+
+- Expected chain ID.
+- Successful receipt status.
+- Expected contract address.
+- Expected event topic and event arguments.
+- Correct wallet ownership.
+- Required confirmation depth.
+
+This architecture prevents the backend from holding user private keys and
+avoids presenting an unconfirmed transaction as successful.
+
+6. Functional Modules
+
+6.1 Borrower module
+
+- Create a borrower profile.
+- Submit financial evidence.
+- Generate an explainable credit assessment.
+- View score history and current eligibility.
+- Request a loan quote.
+- Submit a simulated or on-chain loan request.
+- View repayment installments.
+- Make repayments or repay in full in on-chain mode.
+- Mark overdue status and request restructuring where eligible.
+- Dispute an owned score assessment.
+
+6.2 Lender module
+
+- View pool liquidity and utilization.
+- View lender position and pool shares.
+- Simulate deposits and withdrawals in Demo Mode.
+- Claim test MockUSDC in local on-chain mode.
+- Deposit and withdraw liquidity through wallet transactions.
+- View pending borrower loan requests in Demo Mode.
+
+6.3 Reviewer and operator module
+
+- Review demo dispute records.
+- Read on-chain disputes and recovery requests.
+- Attest borrower scores.
+- Fund queued loans.
+- Mark overdue or defaulted loans.
+- Resolve disputes.
+- Approve or reject recovery plans.
+- Complete recovery milestones.
+
+6.4 Transaction module
+
+Every on-chain action follows:
+
+Prepared -> Submitted -> Pending -> Confirmed
+
+Failure states include rejected, reverted, timed out, replaced, wrong network,
+not configured, and general error.
+
+After confirmation, the interface displays:
+
+- Sender wallet address.
+- Recipient contract address.
+- Transaction hash.
+- Gas used.
+- Gas price in gwei.
+- Actual gas fee paid in ETH.
+
+For multi-step actions, the total fee combines all confirmed receipts.
+
+7. Credit Scoring Model
+
+The academic score is a weighted sum:
+
+Repayment history       35 percent
+Affordability           25 percent
+Cash-flow stability     15 percent
+Debt burden             15 percent
+Evidence quality        10 percent
+
+Each factor is normalized from 0 to 100. The backend returns the raw value,
+weight, contribution, explanation, validity period, risk category, and status.
+The borrowing limit is score multiplied by 15 MockUSDC and capped at 2,000
+MockUSDC.
+
+This model is illustrative. It is not a validated underwriting system and does
+not independently verify income, identity, or repayment capacity.
+
+8. Smart Contract Design
+
+MockUSDC:
+Local test token with faucet and mint controls.
+
+IdentityRegistry:
+Registers wallet identities and profile hashes.
+
+CreditScoreRegistry:
+Stores score attestations, validity, ownership, and revocation.
+
+LendingPool:
+Shared liquidity pool with ERC-4626 share accounting, deposits, withdrawals,
+interest accounting, and loss handling.
+
+LoanManager:
+Handles quotes, eligibility, requests, funding, disbursement, installment
+repayments, overdue state, default, and administration.
+
+RecoveryManager:
+Handles restructuring requests, officer decisions, milestones, and progress.
+
+DisputeManager:
+Handles borrower disputes, reviewer decisions, and score invalidation.
+
+9. Security and Privacy Design
+
+The design uses the following protections:
+
+- Private keys never enter the backend or source bundle.
+- Wallet actions are simulated before prompting the user.
+- Contract roles restrict operator-only actions.
+- Input validation checks addresses, amounts, dates, scores, and statuses.
+- Pausable controls exist on protocol contracts.
+- Reentrancy protections are tested for pool operations.
+- Demo transactions do not fabricate hashes or receipt confirmations.
+- Backend receipt verification prevents accepting unrelated transactions.
+
+The system is not security audited. Development wallet keys are public Hardhat
+keys and must never be reused on a real network.
+
+10. Testing and Validation
+
+The repository includes backend, frontend, contract, integration, and manual
+testing material.
+
+Observed validation results at the current checkpoint:
+
+- Smart contract tests: 97 passing.
+- Frontend tests: 36 passing.
+- Frontend TypeScript build: passing.
+- Contract TypeScript check: passing.
+- Targeted backend loan tests: 3 passing.
+- Combined frontend/backend health checks: passing.
+
+The complete backend suite currently has two chain-configuration test failures
+when the local backend/.env contains populated contract addresses while
+DEMO_MODE=true. These failures indicate environment/configuration drift between
+the test expectation and the populated local configuration. They should be
+resolved before release by using a clean test environment or correcting the
+configuration fixture.
+
+11. How to Run
+
+Demo Mode:
+
+From the repository root:
+
+    npm install
+    npm run dev
+
+Open:
+
+    Frontend: http://127.0.0.1:3000
+    Backend:  http://127.0.0.1:8000
+    API docs: http://127.0.0.1:8000/docs
+
+Local blockchain mode:
+
+Terminal 1:
+
+    cd contracts
+    npm run node
+
+Terminal 2:
+
+    cd contracts
+    npm run deploy:local
+
+Then configure backend and frontend for chain ID 31337 and connect MetaMask to
+http://127.0.0.1:8545.
+
+12. Limitations
+
+- The project is not a production lending platform.
+- MockUSDC has no real value.
+- The scoring model has no real-world validation.
+- Evidence is not automatically extracted from banks or institutions.
+- PostgreSQL production integration requires further testing.
+- Sepolia deployment and testnet evidence are not complete.
+- No formal smart-contract audit has been performed.
+- No KYC, AML, regulatory, or privacy certification is provided.
+- Browser wallet flows require local setup and manual verification.
+- Demo data is held in memory and resets when the backend restarts.
+
+13. Future Enhancements
+
+Recommended future work:
+
+1. Complete PostgreSQL integration and migration testing.
+2. Resolve configuration-sensitive backend chain tests.
+3. Add browser end-to-end tests for all wallet roles.
+4. Add event indexing and reliable transaction history.
+5. Add privacy-preserving evidence attestations.
+6. Evaluate the scoring model using ethically collected data.
+7. Conduct an independent smart-contract security audit.
+8. Improve reviewer independence and governance.
+9. Add production observability, rate limiting, and operational controls.
+10. Define legal, privacy, and compliance requirements before real deployment.
+
+14. Conclusion
+
+Credora demonstrates a complete educational workflow for explainable academic
+micro-lending. It combines transparent scoring, shared liquidity, wallet-based
+authorization, contract-enforced rules, recovery workflows, and contestable
+decisions. Its most important engineering principle is that simulated actions
+and confirmed blockchain actions remain visibly separate.
+
+The project provides a useful foundation for teaching and evaluating
+decentralized lending design, but it must remain an academic prototype until
+its scoring, security, persistence, privacy, and operational limitations are
+addressed.
+
+15. Detailed Methodology
+
+The project followed an incremental full-stack development methodology. The
+domain was first divided into borrower, lender, reviewer, authentication,
+credit, lending, recovery, dispute, and blockchain responsibilities. Each
+responsibility was represented at the appropriate boundary: user interaction
+in the frontend, business rules and persistence coordination in the backend,
+and settlement-critical rules in smart contracts.
+
+The implementation was then developed in vertical slices. A vertical slice
+contains the interface, API or contract call, state transition, error state,
+and test evidence for one user-visible capability. For example, a borrower
+loan request includes quote generation, eligibility checks, request creation,
+pool funding behavior, transaction status handling, and a resulting facility
+view. This approach reduces the risk of implementing a user interface that
+does not correspond to a functioning backend or contract workflow.
+
+The project uses a dual-mode strategy to make development repeatable. Demo
+Mode allows the user interface and REST workflows to be tested without
+external infrastructure. On-chain Mode uses a deterministic local chain so
+wallet transactions, receipt confirmation, gas accounting, and contract state
+can be tested without real funds. The separation is intentional: simulated
+results are never represented as blockchain confirmations.
+
+16. End-to-End Data Flow
+
+16.1 Borrower onboarding
+
+The user opens the frontend and selects the Borrower workspace. In Demo Mode,
+the frontend authenticates through a local demo nonce mechanism. In on-chain
+mode, the connected wallet provides the address and signs the backend's
+authentication challenge. The backend associates the session with that
+address.
+
+The borrower creates a profile by sending a display name and optional
+biographical information. The backend validates the request and stores the
+profile through the active repository. In on-chain mode, the borrower may
+register identity through IdentityRegistry. The backend later verifies the
+registration receipt before changing the profile identity status to registered.
+
+16.2 Evidence and assessment
+
+The borrower submits normalized evidence values for repayment history,
+affordability, cash-flow stability, debt burden, and evidence quality. The
+backend validates the ranges and stores the evidence. The assessment service
+applies the documented weights, computes the score, assigns a risk category,
+and creates an explanation.
+
+The frontend displays both the total score and the individual contributions.
+This makes it possible to see whether a score is limited by affordability,
+cash-flow stability, evidence quality, or another factor. A validity period is
+attached to each assessment so expired results cannot be treated as current.
+
+16.3 Loan request
+
+The borrower chooses a principal amount and duration. The frontend requests a
+quote and displays interest, total repayment, installment count, and due dates.
+The backend and contracts use the same annual interest convention and the final
+installment absorbs rounding differences.
+
+In Demo Mode, the request is stored in the in-memory demo repository and is
+shown as simulated. In on-chain mode, the frontend first simulates the
+LoanManager call. If simulation succeeds, MetaMask asks the borrower to sign.
+The transaction is then monitored until the required receipt confirmation.
+Available pool liquidity determines whether the loan is funded immediately or
+remains queued for an authorized funder.
+
+16.4 Lender workflow
+
+The lender workspace reads pool liquidity, total assets, utilization, shares,
+and current position. In Demo Mode, deposits and withdrawals update the
+simulated pool. Pending borrower requests are fetched through the pool request
+endpoint and displayed with their amount, term, identifier, and funding state.
+
+In on-chain mode, the lender first obtains test MockUSDC, approves the exact
+deposit amount, and deposits into the LendingPool. The approval is not an
+unlimited approval. The pool mints shares according to its asset accounting.
+Withdrawals are restricted by available idle liquidity so funds committed to
+loans cannot be withdrawn incorrectly.
+
+16.5 Repayment and recovery
+
+The borrower can view the repayment schedule and the next amount due. In
+on-chain mode, the frontend prepares the exact token approval and repayment
+call. The pool collects repayments and the LoanManager updates interest,
+principal, installment status, and overall loan status.
+
+When a payment becomes overdue after the configured grace period, the loan can
+be marked overdue. Instead of moving directly to default, the borrower may
+submit a recovery request. An authorized recovery officer reviews the proposed
+amount, due date, reason, and milestone schedule. Approved milestones are
+completed in order using repayments recorded by the protocol.
+
+17. API and Repository Design
+
+The FastAPI application uses versioned routes under /api/v1. Schemas define
+request and response shapes, including validation constraints for amounts,
+durations, addresses, scores, statuses, and identifiers. Services coordinate
+business rules and repositories isolate storage.
+
+The repository interface allows DemoRepository and PostgresRepository to
+provide the same domain operations. This is important for testing because the
+frontend can exercise realistic workflows without requiring a running
+PostgreSQL server. Production mode can use database-backed models and Alembic
+migrations without changing the route contract.
+
+The API is intentionally not the source of truth for on-chain settlement. The
+backend can prepare application data and verify receipts, but the wallet and
+contracts determine whether a blockchain action was actually authorized and
+confirmed. This avoids treating a request sent to the backend as proof that
+funds moved.
+
+18. Frontend State and User Experience
+
+The frontend separates server data, wallet data, application navigation, and
+transaction status. TanStack Query controls asynchronous workspace data and
+refresh behavior. Wagmi and viem provide wallet connection, chain reads, and
+contract writes. The AuthContext tracks the selected role, network mode,
+wallet address, profile, and active transaction.
+
+The interface communicates important states through visible labels:
+
+- Demo Mode identifies simulated actions.
+- Red wallet status identifies a missing or disconnected wallet.
+- Green wallet status identifies a connected wallet.
+- Amber notices identify configuration or eligibility requirements.
+- Red notices identify failures or wrong-network conditions.
+- Green confirmation panels identify successful receipts only.
+
+The transaction panel is deliberately explicit. Prepared means simulation
+passed, not that a transaction was sent. Submitted means the wallet returned a
+hash, not that the transaction was mined. Pending means the receipt is still
+being awaited. Confirmed means the receipt succeeded on the expected chain and
+contract. Failed states preserve an understandable reason and, when
+available, the transaction hash.
+
+19. Transaction and Gas Accounting
+
+For each confirmed receipt, the transaction engine reads gasUsed and
+effectiveGasPrice. The actual network fee is calculated as:
+
+    gas fee in wei = gas used x effective gas price
+
+The result is converted from wei to ETH for display. The gas price is also
+shown in gwei, while the gas used remains an integer unit count. This gives
+the user enough information to understand how the displayed fee was derived.
+
+For operations requiring multiple transactions, such as an exact token
+approval followed by a deposit, the interface sums the gas cost of every
+confirmed step. The final transaction panel identifies the final contract and
+shows the combined fee. Intermediate hashes remain available in the
+transaction status object for future transaction-history functionality.
+
+Gas cost is not displayed for Demo Mode because no blockchain transaction is
+sent. This distinction prevents a simulated fee from being mistaken for a
+real wallet charge.
+
+20. Error Handling and Recovery Behavior
+
+The application handles errors at several levels. Request validation errors
+are returned by Pydantic schemas and displayed near the relevant action.
+Authentication failures clear stale sessions and request a new challenge.
+Backend unavailability in Demo Mode can use the in-browser demo store, while
+on-chain mode reports configuration or network failures rather than silently
+simulating a blockchain action.
+
+Wallet errors are classified into rejected, reverted, timeout, replaced,
+wrong-chain, not-configured, and general categories. A replaced transaction is
+not treated as successful unless the replacement is a repriced version that is
+followed to its receipt. A cancellation or replacement failure remains a
+failure even if a different transaction later succeeds.
+
+The application invalidates relevant queries after a completed or failed
+contract flow so that displayed balances, pool state, eligibility, and loan
+state can be refreshed. The current implementation would benefit from a
+durable transaction history and background receipt reconciliation for browser
+reloads.
+
+21. Database and Persistence Considerations
+
+Demo Mode intentionally uses process memory. This makes the project simple to
+start and prevents accidental use of real financial data during development.
+The trade-off is that all demo state is lost when the backend restarts, and
+multiple backend processes do not share the same state.
+
+Production mode defines SQLAlchemy models and Alembic migrations for users,
+borrower profiles, evidence, assessments, loans, repayments, pool
+transactions, recovery requests, milestones, disputes, and audit records. A
+production deployment would need connection pooling, backups, migrations
+applied through a controlled release process, monitoring, and data-retention
+policies.
+
+The report should not interpret the PostgreSQL-ready design as proof of
+production readiness. A complete deployment still requires a fresh-database
+migration test, concurrency testing, authorization testing, backup recovery,
+and operational review.
+
+22. Test Strategy
+
+The test strategy uses multiple layers:
+
+Unit tests validate scoring formulas, quote calculations, amount conversion,
+transaction error classification, navigation, and API client behavior.
+
+Backend route tests validate authentication, profiles, evidence, assessments,
+loans, workflows, and chain verification using the demo repository and mocked
+RPC behavior where appropriate.
+
+Contract tests validate access control, input validation, pause behavior,
+reentrancy protection, pool accounting, loan state transitions, repayments,
+overdue rules, recovery milestones, and dispute resolution.
+
+Integration tests deploy the protocol locally and run the lender and borrower
+workflow across multiple contracts. The frontend also includes local-chain
+support for browser smoke tests covering wallet connection and important
+on-chain flows.
+
+Manual testing remains important because wallet prompts, wrong-network
+behavior, browser reloads, visual labels, and confirmation timing are not
+fully represented by unit tests. The manual testing guide records repeatable
+PowerShell commands for the backend demo flow.
+
+23. Performance and Scalability Discussion
+
+The current prototype is designed for correctness and explainability rather
+than high throughput. Demo repositories use in-memory dictionaries and are
+adequate for a single development process. PostgreSQL queries use indexed
+relationships and ordered reads, but production traffic characteristics have
+not been measured.
+
+On-chain reads can become expensive or slow when every page repeatedly reads
+large queues. A production system would use event indexing, pagination,
+bounded queue windows, caching, and carefully selected read models. The
+frontend already refreshes selected chain data periodically, but a production
+indexer would provide stronger historical views and reduce repeated RPC work.
+
+Smart-contract scalability is limited by Ethereum gas costs and transaction
+confirmation time. Batch operations, compact event data, and off-chain
+presentation indexes could improve usability without moving settlement rules
+out of the contracts.
+
+24. Accessibility and Usability Considerations
+
+The interface uses semantic headings, labels, buttons, tables, status roles,
+keyboard focus styles, responsive layouts, and visible transaction states.
+The design includes compact mobile layouts and avoids hiding important
+workflow state only in color. Connected and disconnected wallet states include
+text labels in addition to colored indicators.
+
+Further accessibility work should include automated axe checks, screen-reader
+testing of modal and transaction announcements, improved table navigation,
+color-contrast verification for every theme, and full keyboard testing of
+wallet and reviewer workflows.
+
+25. Ethical, Legal, and Privacy Considerations
+
+Credit scoring can affect access to financial resources and can reproduce bias
+if evidence, weights, or reviewer decisions are unfair. The current model is
+an educational example and should not be used to make decisions about real
+people. Any future research evaluation would require informed consent,
+careful data minimization, fairness analysis, an appeal process, and
+institutional review where applicable.
+
+Wallet addresses and on-chain actions can be publicly observable. A real
+deployment must consider whether publishing score attestations, loan states,
+or dispute events creates privacy risks. Sensitive evidence should not be
+written directly to a public chain. Privacy-preserving attestations,
+encrypted storage, access controls, retention limits, and clear user
+disclosures would be required.
+
+The project does not provide legal, financial, tax, consumer-credit, KYC, AML,
+or regulatory advice. These questions must be reviewed by qualified
+professionals before any non-academic use.
+
+26. Project Outcomes
+
+The completed prototype demonstrates:
+
+1. A working separation between simulated and blockchain-backed modes.
+2. A transparent scoring pipeline from evidence to eligibility.
+3. A shared liquidity model for lender participation.
+4. Contract-level enforcement of loan and repayment rules.
+5. A recovery path that avoids treating every overdue loan as an immediate
+   default.
+6. A dispute path that allows a borrower to challenge an assessment.
+7. Wallet-controlled signing without backend custody of private keys.
+8. Receipt-verified transaction success with visible gas accounting.
+9. A testable local deployment suitable for demonstrations and teaching.
+10. Documentation that identifies unfinished production requirements.
+
+27. Final Evaluation
+
+Credora meets the goals of an academic prototype: it presents a coherent
+problem, implements the major user roles, connects a web interface to a
+backend and smart-contract layer, and records the important limitations of
+the approach. The strongest aspects are the explicit trust boundaries, the
+visible scoring factors, the separation of transaction lifecycle states, and
+the ability to test the protocol locally.
+
+The most important remaining work is not adding more screens. It is proving
+the reliability, security, fairness, privacy, and operational behavior of the
+system under realistic conditions. In particular, future work should resolve
+configuration-sensitive tests, complete database integration evidence, add
+browser-level regression coverage, audit the contracts, and validate the
+scoring approach with appropriate ethical safeguards.
+
+As delivered, the project is a strong educational foundation for studying
+decentralized micro-lending and explainable financial workflows. It should
+remain clearly labelled as a prototype until the limitations described in this
+report have been addressed.
