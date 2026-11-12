@@ -1,0 +1,94 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "deployedAt": "2026-11-12T09:31:51.398Z",
+  "deployer": "0x82B934E1dE30017d1473A1323b2b23d5487823b7",
+  "operator": "0x9A5b2EA30225fdCCac6f3f6e9DC49Ea3588aFBb4",
+  "seeded": true,
+  "loanParameters": {
+    "annualRateBps": 1200,
+    "gracePeriod": "259200",
+    "requestTtl": "604800",
+    "defaultAfter": "5184000",
+    "autoFund": true,
+    "limitPerScoreBps": "150000",
+    "minPrincipal": "1000000",
+    "maxPrincipal": "2000000000"
+  },
+  "contracts": {
+    "MockUSDC": {
+      "address": "0x09e560334bfAfe29F3F6b8F0D8eBd21186FF4e76",
+      "transactionHash": "0xb0c27e0ce62de3b55819c3b57bf103384b9a863fa51e81aa7f5216d6ff23d677",
+      "blockNumber": 12117949,
+      "constructorArgs": [
+        "0x82B934E1dE30017d1473A1323b2b23d5487823b7",
+        true
+      ]
+    },
+    "IdentityRegistry": {
+      "address": "0xEB47CA29064d35B99f654E4Faaf3F44Bbfa2A301",
+      "transactionHash": "0x6701a389a322b219f22cbf6ebe40d8dee3d68b0dc50a1756ab7ddfd3b8b3cfc9",
+      "blockNumber": 12117950,
+      "constructorArgs": [
+        "0x82B934E1dE30017d1473A1323b2b23d5487823b7"
+      ]
+    },
+    "CreditScoreRegistry": {
+      "address": "0x872b525fD304C36Cb993Fc0D3aD6cc8B87Eff61b",
+      "transactionHash": "0x06db97fbc794929cec458076548f66131faa4eacf948aa7a5c33cd5166282519",
+      "blockNumber": 12117952,
+      "constructorArgs": [
+        "0x82B934E1dE30017d1473A1323b2b23d5487823b7",
+        "0xEB47CA29064d35B99f654E4Faaf3F44Bbfa2A301"
+      ]
+    },
+    "LendingPool": {
+      "address": "0x9E2C5E1b592c3dBE62D344AC0D9bcBD1cbAccC38",
+      "transactionHash": "0xa81807f496c5b63248d1cc469891d3907e47d30df8d4a9fb6fb5a1f1ce97f573",
+      "blockNumber": 12117953,
+      "constructorArgs": [
+        "0x09e560334bfAfe29F3F6b8F0D8eBd21186FF4e76",
+        "0x82B934E1dE30017d1473A1323b2b23d5487823b7"
+      ]
+    },
+    "LoanManager": {
+      "address": "0x84F8CCe0d54Bc161f0B823B6C5212559D9be1330",
+      "transactionHash": "0x6e71a0aeb529c3cb3815723c6ad5c3da9813f4604642b9568d0f87e48e44145f",
+      "blockNumber": 12117955,
+      "constructorArgs": [
+        "0x82B934E1dE30017d1473A1323b2b23d5487823b7",
+        "0x9E2C5E1b592c3dBE62D344AC0D9bcBD1cbAccC38",
+        "0x872b525fD304C36Cb993Fc0D3aD6cc8B87Eff61b",
+        "0xEB47CA29064d35B99f654E4Faaf3F44Bbfa2A301",
+        [
+          1200,
+          "259200",
+          "604800",
+          "5184000",
+          true,
+          "150000",
+          "1000000",
+          "2000000000"
+        ]
+      ]
+    },
+    "RecoveryManager": {
+      "address": "0xbf32b7e46cdD3b60b484efE0314eB3F2c7227305",
+      "transactionHash": "0x44791b8cb2a0c39adf86136cd66620ff73f2af9d5913a6659d1b017e51141c49",
+      "blockNumber": 12117956,
+      "constructorArgs": [
+        "0x82B934E1dE30017d1473A1323b2b23d5487823b7",
+        "0x84F8CCe0d54Bc161f0B823B6C5212559D9be1330"
+      ]
+    },
+    "DisputeManager": {
+      "address": "0xc9Aa5Fd569EF24f5E8096d90D259D8Ebf0F2A4f5",
+      "transactionHash": "0x6393e44d92ef837152e3ab8b8be7c7bfc2992ed5f1f02ac7fbc4535adfd51a76",
+      "blockNumber": 12117957,
+      "constructorArgs": [
+        "0x82B934E1dE30017d1473A1323b2b23d5487823b7",
+        "0x872b525fD304C36Cb993Fc0D3aD6cc8B87Eff61b"
+      ]
+    }
+  }
+}

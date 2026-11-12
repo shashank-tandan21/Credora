@@ -34,7 +34,8 @@ export const TransactionToast: React.FC = () => {
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    if (activeTx?.state !== 'confirmed') return
+    // Real confirmations stay visible (with their Etherscan links) until dismissed.
+    if (activeTx?.state !== 'confirmed' || !activeTx.simulated) return
     const timer = setTimeout(() => setTransactionStatus(null), 15_000)
     return () => clearTimeout(timer)
   }, [activeTx, setTransactionStatus])
@@ -143,14 +144,33 @@ export const TransactionToast: React.FC = () => {
                   {copied ? 'Copied' : <Copy className="w-3.5 h-3.5" />}
                 </button>
                 {explorer ? (
-                  <a href={explorer} target="_blank" rel="noreferrer" className="text-accent dark:text-accent" aria-label="Open in block explorer">
-                    <ExternalLink className="w-3.5 h-3.5" />
+                  <a href={explorer} target="_blank" rel="noreferrer" className="flex items-center gap-1 font-sans font-semibold text-accent underline dark:text-accent" aria-label="Open in block explorer">
+                    Etherscan <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 ) : (
                   <span className="font-sans text-muted">{activeTx.simulated ? 'Demo Simulation' : networkLabel}</span>
                 )}
               </span>
             </div>
+          )}
+          {confirmed && !activeTx.simulated && (activeTx.hashes?.length ?? 0) > 1 && (
+            <ul className="space-y-1 rounded-lg border border-line px-2.5 py-2 text-xs dark:border-line" aria-label="Verify on Etherscan">
+              {activeTx.hashes!.map((hash, index) => {
+                const url = explorerTxUrl(hash)
+                return (
+                  <li key={hash} className="flex items-center justify-between gap-2">
+                    <span className="text-muted">Transaction {index + 1} of {activeTx.hashes!.length}</span>
+                    {url ? (
+                      <a href={url} target="_blank" rel="noreferrer" className="flex items-center gap-1 font-semibold text-accent underline">
+                        {truncateAddress(hash, 6)} <ExternalLink className="w-3 h-3" />
+                      </a>
+                    ) : (
+                      <span className="font-mono">{truncateAddress(hash, 6)}</span>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
           )}
           {(activeTx.sender || activeTx.recipient || activeTx.gasCost) && (
             <dl className="grid grid-cols-2 gap-x-3 gap-y-1 rounded-lg border border-line bg-surface px-2.5 py-2 text-xs dark:border-line dark:bg-subtle">

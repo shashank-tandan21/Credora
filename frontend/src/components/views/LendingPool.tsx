@@ -82,7 +82,7 @@ export const LendingPool: React.FC = () => {
       : null
     : stats
   const displayPosition: LenderPosition | null = onchain
-    ? chain.loaded && chain.positionLoaded && chainStatus.isConnected && !chainStatus.wrongChain
+    ? chain.loaded && chain.positionLoaded && chainStatus.isConnected
       ? {
           deposited_amount: 0,
           withdrawn_amount: 0,

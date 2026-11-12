@@ -58,7 +58,9 @@ class AuthService:
                 detail="Nonce is missing, mismatched, or expired.",
             )
 
-        if settings.demo_mode:
+        # Demo Mode also accepts a real wallet signature, verified below, so an
+        # on-chain frontend can sign in against the in-memory demo backend.
+        if settings.demo_mode and request.signature.startswith("demo:"):
             if request.signature != f"demo:{request.nonce}":
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,

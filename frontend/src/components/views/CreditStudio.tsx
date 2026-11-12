@@ -36,19 +36,19 @@ export const CreditStudio: React.FC<CreditStudioProps> = ({
 }) => {
   // Slider states for evidence
   const [repaymentHistory, setRepaymentHistory] = useState(
-    currentAssessment?.components.find((c) => c.name === 'Repayment history')?.raw_score ?? 88
+    currentAssessment?.components.find((c) => c.name === 'Repayment history')?.raw_score ?? 50
   )
   const [affordability, setAffordability] = useState(
-    currentAssessment?.components.find((c) => c.name === 'Affordability')?.raw_score ?? 82
+    currentAssessment?.components.find((c) => c.name === 'Affordability')?.raw_score ?? 50
   )
   const [debtBurden, setDebtBurden] = useState(
-    currentAssessment?.components.find((c) => c.name === 'Debt burden')?.raw_score ?? 80
+    currentAssessment?.components.find((c) => c.name === 'Debt burden')?.raw_score ?? 50
   )
   const [cashFlow, setCashFlow] = useState(
-    currentAssessment?.components.find((c) => c.name === 'Cash-flow stability')?.raw_score ?? 75
+    currentAssessment?.components.find((c) => c.name === 'Cash-flow stability')?.raw_score ?? 50
   )
   const [evidenceQuality, setEvidenceQuality] = useState(
-    currentAssessment?.components.find((c) => c.name === 'Evidence quality')?.raw_score ?? 90
+    currentAssessment?.components.find((c) => c.name === 'Evidence quality')?.raw_score ?? 50
   )
 
   const [isCommitting, setIsCommitting] = useState(false)
