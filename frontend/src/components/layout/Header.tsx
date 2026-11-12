@@ -1,7 +1,7 @@
 import { Moon, Sun, ArrowUpRight } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
-import { networkLabel } from '../../web3/config'
+import { demoModeEnabled, networkLabel } from '../../web3/config'
 import { WalletControl } from '../web3/WalletControl'
 import { useEthUsdPrice } from '../../web3/oracle'
 import { Button } from '../common/Button'
@@ -49,11 +49,15 @@ export const Header = ({ activeTab, onSelectTab }: { activeTab: string; onSelect
             {networkMode === 'demo' ? 'Simulation' : oracle.simulated ? 'Mock Chainlink' : 'Chainlink live'}
           </span>
         </div>
-        <label className="mode-select"><span className="sr-only">Network mode</span>
-          <select aria-label="Network mode" value={networkMode} onChange={e => setNetworkMode(e.target.value as 'demo' | 'onchain')}>
-            <option value="demo">Demo mode</option><option value="onchain">{networkLabel} · Testnet</option>
-          </select>
-        </label>
+        {demoModeEnabled ? (
+          <label className="mode-select"><span className="sr-only">Network mode</span>
+            <select aria-label="Network mode" value={networkMode} onChange={e => setNetworkMode(e.target.value as 'demo' | 'onchain')}>
+              <option value="demo">Demo mode</option><option value="onchain">{networkLabel} · Testnet</option>
+            </select>
+          </label>
+        ) : (
+          <span className="mode-select" aria-label="Network mode">{networkLabel} · Live</span>
+        )}
         <button className="icon-button" onClick={toggleTheme} aria-label={resolvedTheme === 'dark' ? 'Use light theme' : 'Use dark theme'}>
           {resolvedTheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </button>

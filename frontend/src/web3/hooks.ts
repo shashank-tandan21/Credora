@@ -23,7 +23,9 @@ export function useOnChainStatus() {
     walletChainId: connection.chainId,
     wrongChain,
     canRead: enabled && configured,
-    canTransact: enabled && configured && connection.isConnected && !wrongChain,
+    // A wallet on another network may still start a transaction: executeSteps asks the
+    // wallet to switch to the target chain before anything is signed.
+    canTransact: enabled && configured && connection.isConnected,
   }
 }
 

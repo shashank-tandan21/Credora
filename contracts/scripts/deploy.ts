@@ -48,14 +48,25 @@ const protocol = await deployProtocol(ethers, {
   log: console.log,
 });
 
-const oracle = await ethers.deployContract("MockEthUsdFeed", [2000_00000000], deployer);
-await oracle.waitForDeployment();
-const oracleTransaction = oracle.deploymentTransaction();
-if (oracleTransaction === null) throw new Error("MockEthUsdFeed has no deployment transaction");
-const oracleReceipt = await oracleTransaction.wait();
-if (oracleReceipt === null || oracleReceipt.status !== 1) throw new Error("MockEthUsdFeed deployment failed");
-const oracleAddress = await oracle.getAddress();
-console.log(`  MockEthUsdFeed       ${oracleAddress}  (ETH/USD $2,000 local feed)`);
+// Local chains get a mock ETH/USD feed. Sepolia uses the real Chainlink feed
+// (0x694AA1769357215DE4FAC081bf1f309aDC325306), so no mock is deployed there.
+let oracleRecord: { address: string; transactionHash: string; blockNumber: number } | undefined;
+if (chainId === LOCAL_CHAIN_ID) {
+  const oracle = await ethers.deployContract("MockEthUsdFeed", [2000_00000000], deployer);
+  await oracle.waitForDeployment();
+  const oracleTransaction = oracle.deploymentTransaction();
+  if (oracleTransaction === null) throw new Error("MockEthUsdFeed has no deployment transaction");
+  const oracleReceipt = await oracleTransaction.wait();
+  if (oracleReceipt === null || oracleReceipt.status !== 1) throw new Error("MockEthUsdFeed deployment failed");
+  oracleRecord = {
+    address: await oracle.getAddress(),
+    transactionHash: oracleTransaction.hash,
+    blockNumber: oracleReceipt.blockNumber,
+  };
+  console.log(`  MockEthUsdFeed       ${oracleRecord.address}  (ETH/USD $2,000 local feed)`);
+} else {
+  console.log("  ETH/USD feed         Chainlink Sepolia 0x694AA1769357215DE4FAC081bf1f309aDC325306");
+}
 
 let seeded = false;
 if (chainId === LOCAL_CHAIN_ID) {
@@ -73,14 +84,9 @@ if (networkName === "default") {
   console.log("In-process network is ephemeral; no deployment manifest written. Use --network localhost.");
 } else {
   const manifest = buildManifest(networkName, chainId, deployer.address, protocol, seeded);
-  manifest.oracle = {
-    ethUsdFeed: {
-      address: oracleAddress,
-      transactionHash: oracleTransaction.hash,
-      blockNumber: oracleReceipt.blockNumber,
-      constructorArgs: [2000_00000000],
-    },
-  };
+  if (oracleRecord) {
+    manifest.oracle = { ethUsdFeed: { ...oracleRecord, constructorArgs: [2000_00000000] } };
+  }
   const file = await writeManifest(manifest);
   console.log(`Manifest written to ${file}`);
   console.log(`Environment values written to ${file.replace(/\.json$/, ".env.example")}`);

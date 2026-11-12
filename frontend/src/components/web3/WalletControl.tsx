@@ -18,10 +18,19 @@ function useWalletActions() {
   const switchChain = useSwitchChain()
   return {
     connect: () => {
-      const connector = connectors[0]
+      // Prefer MetaMask's own EIP-6963 connector; fall back to the generic injected one.
+      const connector =
+        connectors.find((c) => c.id === 'io.metamask') ??
+        connectors.find((c) => c.name.toLowerCase().includes('metamask')) ??
+        connectors[0]
       if (connector) connect.mutate({ connector })
     },
     isConnecting: connect.isPending,
+    connectError: connect.error
+      ? /already pending/i.test(connect.error.message)
+        ? 'MetaMask already has a request open. Click the MetaMask icon in your browser toolbar to finish it.'
+        : connect.error.message.split('\n')[0]
+      : undefined,
     switchToTarget: () => switchChain.mutate({ chainId: targetChain.id }),
     isSwitching: switchChain.isPending,
   }
@@ -87,12 +96,13 @@ export const WalletControl: React.FC = () => {
       )
     }
     return (
+      <div className="relative">
       <button
         type="button"
         onClick={actions.connect}
         disabled={actions.isConnecting}
         aria-label="Connect Wallet"
-        title="MetaMask is not connected. Click to connect."
+        title={actions.connectError ?? 'MetaMask is not connected. Click to connect.'}
         className="flex items-center gap-2 rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-wait disabled:opacity-70 dark:border-rose-800/70 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-950/70"
       >
         <span className="h-2 w-2 rounded-full bg-rose-500" aria-hidden="true" />
@@ -100,6 +110,17 @@ export const WalletControl: React.FC = () => {
         <span className="hidden sm:inline">{actions.isConnecting ? 'Connecting…' : 'MetaMask not connected'}</span>
         <span className="sm:hidden">{actions.isConnecting ? 'Wait…' : 'Connect'}</span>
       </button>
+      {actions.isConnecting && (
+        <p className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border border-line bg-surface p-2 text-xs text-muted shadow-lg">
+          Approve the connection in MetaMask. If no window opened, click the MetaMask icon in your browser toolbar.
+        </p>
+      )}
+      {actions.connectError && !actions.isConnecting && (
+        <p role="alert" className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border border-rose-300 bg-rose-50 p-2 text-xs text-rose-800 shadow-lg dark:border-rose-800/70 dark:bg-rose-950/80 dark:text-rose-200">
+          {actions.connectError}
+        </p>
+      )}
+      </div>
     )
   }
 
@@ -111,7 +132,7 @@ export const WalletControl: React.FC = () => {
         onClick={actions.switchToTarget}
         isLoading={actions.isSwitching}
         leftIcon={<AlertTriangle className="w-3.5 h-3.5" />}
-        title={`Wallet is on chain ${status.walletChainId}; this app uses ${targetChain.name} (${targetChain.id}).`}
+        title={`Wallet is on ${status.walletChainId ? `chain ${status.walletChainId}` : 'another network'}; this app uses ${targetChain.name} (${targetChain.id}).`}
         aria-label={`Switch to ${networkLabel}`}
       >
         <span className="hidden sm:inline">Switch to {networkLabel}</span>
@@ -187,8 +208,9 @@ export const OnChainNotice: React.FC<{ action: string }> = ({ action }) => {
     return (
       <div role="alert" className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border text-xs bg-rose-50 border-rose-200 text-rose-900 dark:bg-rose-950/40 dark:border-rose-800/60 dark:text-rose-200">
         <span>
-          Your wallet is on chain {status.walletChainId}. Switch to {targetChain.name} ({targetChain.id}) to {action}.
-          Transactions are blocked until then.
+          Your wallet is on {status.walletChainId ? `chain ${status.walletChainId}` : 'another network'}. Switch to{' '}
+          {targetChain.name} ({targetChain.id}) to {action}; when you confirm an action, your wallet will ask to switch
+          automatically.
         </span>
         <Button size="sm" variant="destructive" onClick={actions.switchToTarget} isLoading={actions.isSwitching}>
           Switch network

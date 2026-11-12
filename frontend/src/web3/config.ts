@@ -1,6 +1,6 @@
 import type { Chain, Hex } from 'viem'
 import { hardhat, sepolia } from 'viem/chains'
-import { createConfig, http, injected } from 'wagmi'
+import { createConfig, fallback, http, injected } from 'wagmi'
 
 const SUPPORTED_CHAINS: Record<number, Chain> = {
   [sepolia.id]: sepolia,
@@ -35,11 +35,22 @@ export const receiptTimeoutMs = readPositiveNumber(import.meta.env.VITE_TX_TIMEO
 /** On-chain Hardhat Local mode is the default; Demo Mode can be enabled explicitly. */
 export const defaultDemoMode = import.meta.env.VITE_DEMO_MODE === 'true'
 
+/** VITE_ENABLE_DEMO_MODE=false removes Demo Mode entirely (live deployments). */
+export const demoModeEnabled = import.meta.env.VITE_ENABLE_DEMO_MODE !== 'false'
+
+const rpcUrls: (string | undefined)[] = (import.meta.env.VITE_RPC_URL ?? '')
+  .split(',')
+  .map((url: string) => url.trim())
+  .filter(Boolean)
+if (rpcUrls.length === 0) rpcUrls.push(undefined)
+
 export const wagmiConfig = createConfig({
   chains: [targetChain],
   connectors: [injected()],
   transports: {
-    [targetChain.id]: http(import.meta.env.VITE_RPC_URL || undefined),
+    // VITE_RPC_URL may list several comma-separated endpoints; later ones are fallbacks
+    // when an earlier public RPC fails or rate-limits.
+    [targetChain.id]: rpcUrls.length > 1 ? fallback(rpcUrls.map((url) => http(url))) : http(rpcUrls[0]),
   },
 })
 

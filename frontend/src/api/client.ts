@@ -74,6 +74,19 @@ class ApiClient {
     return this.isBackendAvailable
   }
 
+  private walletAuthenticator: ((wallet: string) => Promise<void>) | null = null
+  private walletAuthFailedFor: string | null = null
+
+  /** Registers the wallet-signature login used in on-chain mode. */
+  setWalletAuthenticator(authenticator: ((wallet: string) => Promise<void>) | null) {
+    this.walletAuthenticator = authenticator
+  }
+
+  /** Allows another wallet sign-in attempt after a rejected or failed signature. */
+  resetWalletAuth() {
+    this.walletAuthFailedFor = null
+  }
+
   async ensureAuthenticated(): Promise<string> {
     if (this.token) {
       return this.token
@@ -81,19 +94,34 @@ class ApiClient {
     if (this.authPromise) {
       return this.authPromise
     }
-    this.authPromise = (async () => {
+    const attempt = (async () => {
       try {
         const normalizedWallet = this.demoWallet.toLowerCase()
+        // On-chain mode signs in only with a real wallet signature, never the demo one.
+        if (this.networkMode === 'onchain') {
+          if (!this.walletAuthenticator || this.walletAuthFailedFor === normalizedWallet) return ''
+          try {
+            await this.walletAuthenticator(normalizedWallet)
+          } catch (error) {
+            this.walletAuthFailedFor = normalizedWallet
+            throw error
+          }
+          return this.token ?? ''
+        }
         const { nonce } = await this.requestNonce(normalizedWallet)
         const res = await this.verifySignature(normalizedWallet, nonce, `demo:${nonce}`)
         return res.access_token
       } catch {
         return ''
-      } finally {
-        this.authPromise = null
       }
     })()
-    return this.authPromise
+    // Cleared after settling; an attempt can finish synchronously, so the assignment
+    // must happen first or a resolved attempt would block every later sign-in.
+    this.authPromise = attempt
+    void attempt.finally(() => {
+      if (this.authPromise === attempt) this.authPromise = null
+    })
+    return attempt
   }
 
   private async request<T>(path: string, options: RequestInit = {}): Promise<T> {

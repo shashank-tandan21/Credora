@@ -1,6 +1,6 @@
 import { formatEther } from 'viem'
 import type { Abi, Address, Hex, TransactionReceipt } from 'viem'
-import { getConnection, getPublicClient, simulateContract, writeContract } from 'wagmi/actions'
+import { getConnection, getPublicClient, simulateContract, switchChain, writeContract } from 'wagmi/actions'
 import { receiptTimeoutMs, requiredConfirmations, targetChain, wagmiConfig } from './config'
 import { contractsConfigured, protocolErrorsAbi } from './contracts'
 import { TransactionFlowError } from './errors'
@@ -52,15 +52,27 @@ export async function executeSteps(
   if (!contractsConfigured) {
     throw new TransactionFlowError('not_configured', 'Contract addresses are not configured for this network.')
   }
-  const connection = getConnection(wagmiConfig)
+  let connection = getConnection(wagmiConfig)
   if (!connection.isConnected || !connection.address) {
     throw new TransactionFlowError('error', 'Connect a wallet first.')
   }
   if (connection.chainId !== targetChain.id) {
-    throw new TransactionFlowError(
-      'wrong_chain',
-      `Switch your wallet to ${targetChain.name} (chain ${targetChain.id}) before sending transactions.`,
-    )
+    // Ask the wallet to switch (MetaMask shows its own network prompt), then continue.
+    try {
+      await switchChain(wagmiConfig, { chainId: targetChain.id })
+    } catch {
+      throw new TransactionFlowError(
+        'wrong_chain',
+        `Switch your wallet to ${targetChain.name} (chain ${targetChain.id}) to send this transaction.`,
+      )
+    }
+    connection = getConnection(wagmiConfig)
+    if (connection.chainId !== targetChain.id) {
+      throw new TransactionFlowError(
+        'wrong_chain',
+        `Switch your wallet to ${targetChain.name} (chain ${targetChain.id}) to send this transaction.`,
+      )
+    }
   }
   const account = connection.address
   const publicClient = getPublicClient(wagmiConfig, { chainId: targetChain.id })

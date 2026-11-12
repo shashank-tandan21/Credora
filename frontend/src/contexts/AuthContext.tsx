@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { useConnection, useSignMessage } from 'wagmi'
 import { api } from '../api/client'
-import { defaultDemoMode } from '../web3/config'
+import { defaultDemoMode, demoModeEnabled } from '../web3/config'
 import type { BorrowerProfile, NetworkMode, TransactionStatus, UserRole } from '../types'
 
 interface AuthContextType {
@@ -24,6 +24,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 const DEFAULT_DEMO_WALLET = '0x71C83955620935560935593883839281728392A1'
 
 function initialNetworkMode(): NetworkMode {
+  if (!demoModeEnabled) return 'onchain'
   const saved = localStorage.getItem('credora-network')
   if (saved === 'demo') return 'demo'
   // 'sepolia' is the value stored before local Hardhat support existed.
@@ -44,6 +45,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   })
 
   const [networkMode, setNetworkModeState] = useState<NetworkMode>(initialNetworkMode)
+
+  // Keep the API client's mode in sync with the provider (it may hold a stale saved mode).
+  useEffect(() => {
+    api.setNetworkMode(networkMode)
+  }, [networkMode])
 
   const [isDemoConnected, setIsDemoConnected] = useState<boolean>(true)
   const [profile, setProfile] = useState<BorrowerProfile | null>(null)
@@ -78,12 +84,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('credora-wallet', target)
     api.setWallet(target)
     if (networkMode === 'onchain' && connection.isConnected && connection.address) {
-      const challenge = await api.requestNonce(target)
-      const signature = await signMessageAsync({ message: challenge.message })
-      await api.verifySignature(target, challenge.nonce, signature, challenge.message)
+      api.resetWalletAuth()
+      await api.ensureAuthenticated()
     }
     await refreshProfile()
   }
+
+  // On-chain sign-in: the backend issues a nonce message, the wallet signs it, and the
+  // backend recovers the signer. Concurrent requests share one sign-in via the API client.
+  useEffect(() => {
+    api.setWalletAuthenticator(async (wallet) => {
+      const challenge = await api.requestNonce(wallet)
+      const signature = await signMessageAsync({ message: challenge.message })
+      await api.verifySignature(wallet, challenge.nonce, signature, challenge.message)
+    })
+    return () => api.setWalletAuthenticator(null)
+  }, [signMessageAsync])
 
   const disconnectWallet = () => {
     setIsDemoConnected(false)
